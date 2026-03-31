@@ -296,10 +296,10 @@ h3{font-family:var(--fh);font-size:11px;font-weight:600;color:var(--text2);text-
   <!-- SEMANA -->
   <div class="view" id="view-semana">
     <div class="week-nav">
-      <button onclick="weekOffset--;renderWeek()">←</button>
+      <button onclick="weekOffset--;renderWeek();if(gcalToken)fetchCalendarEvents()">←</button>
       <span class="wk-label" id="wk-label"></span>
-      <button onclick="weekOffset++;renderWeek()">→</button>
-      <button onclick="weekOffset=0;renderWeek()" style="margin-left:4px;font-size:11px">Hoy</button>
+      <button onclick="weekOffset++;renderWeek();if(gcalToken)fetchCalendarEvents()">→</button>
+      <button onclick="weekOffset=0;renderWeek();if(gcalToken)fetchCalendarEvents()" style="margin-left:4px;font-size:11px">Hoy</button>
     </div>
     <div class="week-grid" id="week-grid"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
@@ -786,8 +786,8 @@ function renderWeek(){
     const isToday=d===tstr;
     const isSel=d===selectedWeekDay;
 
-    // Calendar events for this day (GCal only provides today's events)
-    const dayEvents=isToday?calEvents:[];
+    // Calendar events for this day from calEventsByDay
+    const dayEvents=calEventsByDay[d]||[];
     const meetH=dayEvents.reduce((a,e)=>{
       if(!e.start.dateTime||!e.end||!e.end.dateTime)return a;
       return a+(new Date(e.end.dateTime)-new Date(e.start.dateTime))/3600000;
@@ -832,13 +832,14 @@ function renderWeekDay(dateS){
   document.getElementById('week-day-label').textContent=`${DN[dow]} ${d} de ${MN[m-1]}`;
   document.getElementById('week-day-cap').textContent=freeH>0?`${estH.toFixed(1)}h/${freeH.toFixed(1)}h${full?' — LLENO':''}`:slots||'Sin bloques';
 
-  // Calendar events for this day (only if today, since GCal only fetches today)
+  // Calendar events for this day
   const isToday=dateS===todayStr();
+  const dayCalEvents=calEventsByDay[dateS]||[];
   let calHtml='';
-  if(isToday&&gcalToken&&calEvents.length){
+  if(gcalToken&&dayCalEvents.length){
     calHtml=`<div style="padding:10px 0;border-bottom:1px solid var(--border)">
       <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:var(--fh);text-transform:uppercase;letter-spacing:.06em">Reuniones del día</div>
-      ${calEvents.map(e=>{
+      ${dayCalEvents.map(e=>{
         const start=e.start.dateTime?new Date(e.start.dateTime):null;
         const end=e.end&&e.end.dateTime?new Date(e.end.dateTime):null;
         const timeTxt=start?`${pad(start.getHours())}:${pad(start.getMinutes())}${end?`–${pad(end.getHours())}:${pad(end.getMinutes())}`:''}`:'Todo el día';
@@ -1240,18 +1241,17 @@ const CLIENT_ID='17925868051-3prfv5ugc91phbhav1hgjt2kmmv9fke5.apps.googleusercon
 const SCOPES='https://www.googleapis.com/auth/calendar.readonly';
 let gcalToken=LS('dg3_gcal_token',null);
 let calEvents=[];
+let calEventsByDay={};
 
 function gcalAuth(){
   if(gcalToken){gcalDisconnect();return}
   const client=google.accounts.oauth2.initTokenClient({
-    client_id:CLIENT_ID,
-    scope:SCOPES,
+    client_id:CLIENT_ID,scope:SCOPES,
     callback:(resp)=>{
       if(resp.error)return;
       gcalToken={token:resp.access_token,expires:Date.now()+resp.expires_in*1000};
       SS('dg3_gcal_token',gcalToken);
-      updateGcalBtn(true);
-      fetchCalendarEvents();
+      updateGcalBtn(true);fetchCalendarEvents();
     }
   });
   client.requestAccessToken();
@@ -1259,7 +1259,7 @@ function gcalAuth(){
 
 function gcalDisconnect(){
   if(gcalToken&&gcalToken.token)google.accounts.oauth2.revoke(gcalToken.token,()=>{});
-  gcalToken=null;SS('dg3_gcal_token',null);calEvents=[];
+  gcalToken=null;SS('dg3_gcal_token',null);calEvents=[];calEventsByDay={};
   updateGcalBtn(false);renderCalEvents();
 }
 
@@ -1268,30 +1268,36 @@ function updateGcalBtn(connected){
   const lbl=document.getElementById('gcal-label');
   const st=document.getElementById('gcal-status');
   if(connected){
-    btn.classList.add('connected');
-    lbl.textContent='Google Calendar conectado';
+    btn.classList.add('connected');lbl.textContent='Google Calendar conectado';
     if(st)st.textContent='Sincronizado';
   } else {
-    btn.classList.remove('connected');
-    lbl.textContent='Conectar Google Calendar';
+    btn.classList.remove('connected');lbl.textContent='Conectar Google Calendar';
     if(st)st.textContent='Sin conectar';
   }
 }
 
 async function fetchCalendarEvents(){
   if(!gcalToken||Date.now()>gcalToken.expires){gcalToken=null;SS('dg3_gcal_token',null);updateGcalBtn(false);return}
-  const today=new Date();
-  const start=new Date(today.getFullYear(),today.getMonth(),today.getDate()).toISOString();
-  const end=new Date(today.getFullYear(),today.getMonth(),today.getDate(),23,59,59).toISOString();
+  // Fetch the full current week view
+  const dates=getWeekDates(weekOffset);
+  const weekStart=new Date(dates[0]+'T00:00:00');
+  const weekEnd=new Date(dates[6]+'T23:59:59');
   try{
-    const res=await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${start}&timeMax=${end}&singleEvents=true&orderBy=startTime`,{
+    const res=await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${weekStart.toISOString()}&timeMax=${weekEnd.toISOString()}&singleEvents=true&orderBy=startTime&maxResults=100`,{
       headers:{Authorization:`Bearer ${gcalToken.token}`}
     });
     if(!res.ok){if(res.status===401){gcalToken=null;SS('dg3_gcal_token',null);updateGcalBtn(false);}return}
     const data=await res.json();
-    calEvents=(data.items||[]).filter(e=>e.start&&(e.start.dateTime||e.start.date));
-    renderCalEvents();
-    updateFreeTime();
+    const items=(data.items||[]).filter(e=>e.start&&(e.start.dateTime||e.start.date));
+    calEventsByDay={};
+    items.forEach(e=>{
+      const ds=e.start.dateTime?e.start.dateTime.slice(0,10):e.start.date;
+      if(!calEventsByDay[ds])calEventsByDay[ds]=[];
+      calEventsByDay[ds].push(e);
+    });
+    calEvents=calEventsByDay[todayStr()]||[];
+    renderCalEvents();updateFreeTime();
+    if(document.getElementById('view-semana').classList.contains('active'))renderWeek();
   } catch(e){console.error('GCal error',e)}
 }
 
