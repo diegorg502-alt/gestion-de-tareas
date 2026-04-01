@@ -9,11 +9,11 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0f0f0f;--bg2:#161616;--bg3:#1e1e1e;--bg4:#252525;
-  --border:#2a2a2a;--border2:#333;
-  --text:#f0ede6;--text2:#9a9690;--text3:#5a5754;
-  --accent:#d4b896;--accent2:#8a6a4a;
-  --red:#e05a4a;--amber:#d4913a;--green:#5a9e6a;--blue:#4a7ec4;--purple:#8a6ac4;
+  --bg:#f5f4f1;--bg2:#ffffff;--bg3:#f0eeea;--bg4:#e8e6e1;
+  --border:#e0ddd6;--border2:#ccc9c0;
+  --text:#1a1816;--text2:#6b6760;--text3:#a09d96;
+  --accent:#8a6a4a;--accent2:#6b5038;
+  --red:#c0392b;--amber:#c07830;--green:#2e7d4f;--blue:#2563a8;--purple:#6b4ab5;
   --fh:'Syne',sans-serif;--fb:'DM Mono',monospace;
 }
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--fb);font-size:13px;overflow:hidden}
@@ -34,7 +34,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .tbtn-cancel{background:transparent;color:var(--text3);text-decoration:underline}
 
 /* SIDEBAR */
-.sidebar{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;padding:16px 0;display:flex;flex-direction:column}
+.sidebar{background:var(--bg3);border-right:1px solid var(--border);overflow-y:auto;padding:16px 0;display:flex;flex-direction:column}
 .nav-lbl{font-size:10px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;padding:10px 16px 4px;font-family:var(--fh);font-weight:600}
 .nav-item{display:flex;align-items:center;gap:8px;padding:6px 10px;margin:0 6px;border-radius:6px;cursor:pointer;color:var(--text2);font-size:12px;border:none;background:none;width:calc(100% - 12px);text-align:left;font-family:var(--fb);transition:all .15s}
 .nav-item:hover{background:var(--bg3);color:var(--text)}
@@ -71,7 +71,7 @@ h3{font-family:var(--fh);font-size:11px;font-weight:600;color:var(--text2);text-
 .bar-fill.over{background:var(--red)}
 
 /* SLOTS */
-.slot-pill{background:rgba(212,184,150,.1);border:1px solid rgba(212,184,150,.2);border-radius:20px;padding:3px 9px;font-size:11px;color:var(--accent)}
+.slot-pill{background:rgba(138,106,74,.08);border:1px solid rgba(138,106,74,.2);border-radius:20px;padding:3px 9px;font-size:11px;color:var(--accent)}
 
 /* TASKS */
 .task-row{display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:start;padding:11px 0;border-bottom:1px solid var(--border);transition:background .1s;cursor:default}
@@ -80,9 +80,9 @@ h3{font-family:var(--fh);font-size:11px;font-weight:600;color:var(--text2);text-
 .task-row.dragging{opacity:.4}
 .task-row.drag-over{border-top:2px solid var(--accent)}
 .pnum{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:var(--fh);flex-shrink:0;margin-top:1px}
-.p1{background:rgba(224,90,74,.15);color:var(--red);border:1px solid rgba(224,90,74,.3)}
-.p2{background:rgba(212,145,58,.15);color:var(--amber);border:1px solid rgba(212,145,58,.3)}
-.p3{background:rgba(90,158,106,.15);color:var(--green);border:1px solid rgba(90,158,106,.3)}
+.p1{background:rgba(192,57,43,.1);color:var(--red);border:1px solid rgba(192,57,43,.25)}
+.p2{background:rgba(192,120,48,.1);color:var(--amber);border:1px solid rgba(192,120,48,.25)}
+.p3{background:rgba(46,125,79,.1);color:var(--green);border:1px solid rgba(46,125,79,.25)}
 .tname-el{font-size:13px;font-weight:500;color:var(--text);font-family:var(--fh);margin-bottom:3px;cursor:pointer}
 .tname-el:hover{color:var(--accent);text-decoration:underline}
 .task-done .tname-el{text-decoration:line-through;color:var(--text3)}
@@ -93,14 +93,14 @@ h3{font-family:var(--fh);font-size:11px;font-weight:600;color:var(--text2);text-
 .tag-dl{color:var(--amber)}
 .tag-lrn{color:var(--green);font-style:italic}
 .sbadge{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:500;font-family:var(--fh);text-transform:uppercase;letter-spacing:.04em}
-.s0{background:rgba(90,90,90,.2);color:var(--text3);border:1px solid var(--border2)}
-.s1{background:rgba(74,126,196,.15);color:var(--blue);border:1px solid rgba(74,126,196,.3)}
-.s2{background:rgba(90,158,106,.15);color:var(--green);border:1px solid rgba(90,158,106,.3)}
+.s0{background:rgba(160,157,150,.15);color:var(--text2);border:1px solid var(--border2)}
+.s1{background:rgba(37,99,168,.1);color:var(--blue);border:1px solid rgba(37,99,168,.25)}
+.s2{background:rgba(46,125,79,.1);color:var(--green);border:1px solid rgba(46,125,79,.25)}
 .tacts{display:flex;gap:5px;align-items:center;flex-shrink:0;padding-top:1px}
 .bsm{height:26px;padding:0 9px;border:1px solid var(--border2);border-radius:5px;background:transparent;color:var(--text2);cursor:pointer;font-size:11px;font-family:var(--fb);white-space:nowrap;transition:all .15s}
 .bsm:hover{border-color:var(--border);color:var(--text);background:var(--bg3)}
-.bstart{border-color:rgba(212,184,150,.4);color:var(--accent)}
-.bstart:hover{border-color:var(--accent);background:rgba(212,184,150,.08)}
+.bstart{border-color:rgba(138,106,74,.4);color:var(--accent)}
+.bstart:hover{border-color:var(--accent);background:rgba(138,106,74,.06)}
 .bdel:hover{border-color:rgba(224,90,74,.4);color:var(--red)}
 .mini-sel{height:24px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text2);font-size:11px;padding:0 4px;font-family:var(--fb);cursor:pointer}
 .mini-date{height:24px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text2);font-size:11px;padding:0 5px;font-family:var(--fb);color-scheme:dark}
@@ -116,11 +116,11 @@ h3{font-family:var(--fh);font-size:11px;font-weight:600;color:var(--text2);text-
 .field input,.field select,.field textarea{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px;padding:7px 10px;font-family:var(--fb);transition:border .15s;color-scheme:dark}
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent2)}
 .field textarea{resize:vertical;min-height:64px}
-.hint-box{background:rgba(90,158,106,.08);border:1px solid rgba(90,158,106,.25);border-radius:6px;padding:7px 12px;font-size:12px;color:var(--green);display:none}
+.hint-box{background:rgba(46,125,79,.06);border:1px solid rgba(46,125,79,.2);border-radius:6px;padding:7px 12px;font-size:12px;color:var(--green);display:none}
 .hint-box.on{display:block}
-.capacity-warn{background:rgba(224,90,74,.08);border:1px solid rgba(224,90,74,.3);border-radius:6px;padding:7px 12px;font-size:12px;color:var(--red);display:none}
+.capacity-warn{background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.2);border-radius:6px;padding:7px 12px;font-size:12px;color:var(--red);display:none}
 .capacity-warn.on{display:block}
-.btn-primary{height:38px;background:var(--accent);color:#1a1208;border:none;border-radius:7px;font-size:13px;font-weight:700;font-family:var(--fh);cursor:pointer;letter-spacing:.02em;transition:opacity .15s}
+.btn-primary{height:38px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;font-family:var(--fh);cursor:pointer;letter-spacing:.02em;transition:opacity .15s}
 .btn-primary:hover{opacity:.88}
 
 /* WEEK */
@@ -164,7 +164,7 @@ h3{font-family:var(--fh);font-size:11px;font-weight:600;color:var(--text2);text-
 .rec-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
 .rec-item:last-child{border-bottom:none}
 .rec-period{font-size:11px;font-family:var(--fb);background:var(--bg4);padding:3px 8px;border-radius:4px;color:var(--text2);white-space:nowrap}
-.rec-active{color:var(--blue);background:rgba(74,126,196,.1);border:1px solid rgba(74,126,196,.25);padding:2px 7px;border-radius:4px;font-size:10px;font-family:var(--fh);font-weight:600;text-transform:uppercase}
+.rec-active{color:var(--blue);background:rgba(37,99,168,.08);border:1px solid rgba(37,99,168,.2);padding:2px 7px;border-radius:4px;font-size:10px;font-family:var(--fh);font-weight:600;text-transform:uppercase}
 .rec-inactive{color:var(--text3);font-size:10px;font-family:var(--fh);text-transform:uppercase}
 
 /* AGENCY */
@@ -190,7 +190,7 @@ h3{font-family:var(--fh);font-size:11px;font-weight:600;color:var(--text2);text-
 /* GOOGLE CAL */
 .gcal-btn{display:flex;align-items:center;gap:7px;height:32px;padding:0 14px;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--text2);cursor:pointer;font-size:12px;font-family:var(--fb);transition:all .15s}
 .gcal-btn:hover{border-color:var(--border);color:var(--text);background:var(--bg3)}
-.gcal-btn.connected{border-color:rgba(90,158,106,.4);color:var(--green)}
+.gcal-btn.connected{border-color:rgba(46,125,79,.4);color:var(--green)}
 .gcal-icon{width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#4285f4,#34a853,#fbbc05,#ea4335);flex-shrink:0}
 .cal-event{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
 .cal-event:last-child{border-bottom:none}
@@ -1243,20 +1243,6 @@ let gcalToken=LS('dg3_gcal_token',null);
 let calEvents=[];
 let calEventsByDay={};
 
-function gcalAuth(){
-  if(gcalToken){gcalDisconnect();return}
-  const client=google.accounts.oauth2.initTokenClient({
-    client_id:CLIENT_ID,scope:SCOPES,
-    callback:(resp)=>{
-      if(resp.error)return;
-      gcalToken={token:resp.access_token,expires:Date.now()+resp.expires_in*1000};
-      SS('dg3_gcal_token',gcalToken);
-      updateGcalBtn(true);fetchCalendarEvents();
-    }
-  });
-  client.requestAccessToken();
-}
-
 function gcalDisconnect(){
   if(gcalToken&&gcalToken.token)google.accounts.oauth2.revoke(gcalToken.token,()=>{});
   gcalToken=null;SS('dg3_gcal_token',null);calEvents=[];calEventsByDay={};
@@ -1437,11 +1423,82 @@ function resetSchedule(){
 }
 
 // ─── INIT GCAL ON LOAD ───────────────────────────────────
+let gcalClient=null;
+
+function initGcalClient(){
+  if(typeof google==='undefined'||!google.accounts)return;
+  gcalClient=google.accounts.oauth2.initTokenClient({
+    client_id:CLIENT_ID,scope:SCOPES,
+    prompt:'',// silent — no popup if already consented
+    callback:(resp)=>{
+      if(resp.error)return;
+      gcalToken={token:resp.access_token,expires:Date.now()+resp.expires_in*1000};
+      SS('dg3_gcal_token',gcalToken);
+      updateGcalBtn(true);
+      fetchCalendarEvents();
+    }
+  });
+}
+
+function silentReconnect(){
+  if(!gcalClient)return;
+  // Request token silently (no user interaction if already consented)
+  gcalClient.requestAccessToken({prompt:''});
+}
+
+function gcalAuth(){
+  if(gcalToken&&Date.now()<gcalToken.expires){gcalDisconnect();return}
+  if(!gcalClient)initGcalClient();
+  if(!gcalClient)return;
+  gcalClient.requestAccessToken();
+}
+
+function checkAndRefreshToken(){
+  if(!gcalToken)return;
+  const timeLeft=gcalToken.expires-Date.now();
+  // Refresh if less than 5 minutes left
+  if(timeLeft<5*60*1000){
+    silentReconnect();
+  }
+}
+
 window.addEventListener('load',()=>{
-  if(gcalToken&&Date.now()<gcalToken.expires){
-    updateGcalBtn(true);
-    fetchCalendarEvents();
-    setInterval(fetchCalendarEvents,5*60*1000);
+  // Wait for Google script to load
+  const tryInit=()=>{
+    if(typeof google!=='undefined'&&google.accounts){
+      initGcalClient();
+      if(gcalToken){
+        if(Date.now()<gcalToken.expires){
+          updateGcalBtn(true);
+          fetchCalendarEvents();
+        } else {
+          // Token expired — reconnect silently
+          silentReconnect();
+        }
+      }
+    } else {
+      setTimeout(tryInit,500);
+    }
+  };
+  setTimeout(tryInit,500);
+
+  // Check token every minute and refresh proactively
+  setInterval(()=>{
+    checkAndRefreshToken();
+    if(gcalToken&&Date.now()<gcalToken.expires){
+      fetchCalendarEvents();
+    }
+  },5*60*1000);
+});
+
+// Also reconnect when tab becomes visible again (user reopens laptop)
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&gcalToken){
+    if(Date.now()>gcalToken.expires){
+      silentReconnect();
+    } else {
+      fetchCalendarEvents();
+    }
   }
 });
 
