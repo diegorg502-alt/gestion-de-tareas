@@ -534,11 +534,115 @@ function slotH(sl){
 }
 function dayH(dow){return(SCHEDULE[dow]||[]).reduce((a,s)=>a+slotH(s),0)}
 
+// ─── SUPABASE ────────────────────────────────────────────
+const SB_URL='https://vfuxonefnwobejmvwxvd.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmdXhvbmVmbndvYmVqbXZ3eHZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0Mjg0NTYsImV4cCI6MjA5MTAwNDQ1Nn0.M_MjitcS1cRXsUNOyabo_HSQrRRAyFHW4sV3UPmBU6Q';
+
+async function sbFetch(path,method='GET',body=null,mode=''){
+  const preferParts=['return=representation'];
+  if(mode==='upsert')preferParts.push('resolution=merge-duplicates');
+  const opts={
+    method,
+    headers:{
+      'Content-Type':'application/json',
+      'apikey':SB_KEY,
+      'Authorization':'Bearer '+SB_KEY,
+      'Prefer':preferParts.join(',')
+    }
+  };
+  if(body)opts.body=JSON.stringify(body);
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/'+path,opts);
+    if(!r.ok){
+      const errText=await r.text();
+      console.error('SB error',r.status,errText);
+      return null;
+    }
+    const txt=await r.text();
+    return txt?JSON.parse(txt):null;
+  }catch(e){
+    // Silent fail — localStorage still works as fallback
+    return null;
+  }
+}
+
+// Load all data from Supabase
+async function loadFromSupabase(){
+  const [t,a,l,mn,r,sc]=await Promise.all([
+    sbFetch('tasks?select=*&order=created_at.asc'),
+    sbFetch('agency?select=*'),
+    sbFetch('learned?select=*'),
+    sbFetch('meeting_notes?select=*'),
+    sbFetch('recurrents?select=*'),
+    sbFetch('schedule?select=*&id=eq.1&limit=1'),
+  ]);
+
+  if(t&&t.length>0){
+    tasks=t.map(row=>({
+      id:row.id,client:row.client,name:row.name,priority:row.priority,
+      date:row.date,deadline:row.deadline,hours:row.hours,notes:row.notes,
+      status:row.status,timeLogs:row.time_logs||[],meetingKey:row.meeting_key,
+      createdAt:new Date(row.created_at).getTime()
+    }));
+    SS(KEY_TASKS,tasks);
+  }
+  if(a&&a.length>0){
+    agency=a.map(row=>({id:row.id,idea:row.idea,date:row.date,status:row.status}));
+    SS(KEY_AGENCY,agency);
+  }
+  if(l&&l.length>0){
+    learned={};
+    l.forEach(row=>{learned[row.key]={count:row.count,total:row.total}});
+    SS(KEY_LEARNED,learned);
+  }
+  if(mn&&mn.length>0){
+    meetingNotes={};
+    mn.forEach(row=>{meetingNotes[row.key]={notes:row.notes,pending:row.pending||[]}});
+    SS(KEY_NOTES,meetingNotes);
+  }
+  if(r&&r.length>0){
+    recs=r.map(row=>({id:row.id,name:row.name,fromDay:row.from_day,toDay:row.to_day,hours:row.hours,client:row.client||''}));
+    SS(KEY_RECS,recs);
+  }
+  if(sc&&sc.length>0&&sc[0].data){
+    editableSchedule=sc[0].data;
+    Object.assign(SCHEDULE,editableSchedule);
+    SS(KEY_SCHEDULE,editableSchedule);
+  }
+}
+
+// Upsert a single task to Supabase
+async function sbSaveTask(t){
+  await sbFetch('tasks','POST',{
+    id:t.id,client:t.client,name:t.name,priority:t.priority,
+    date:t.date||null,deadline:t.deadline||null,hours:t.hours,notes:t.notes||null,
+    status:t.status,time_logs:t.timeLogs||[],meeting_key:t.meetingKey||null,
+    created_at:t.createdAt?new Date(t.createdAt).toISOString():new Date().toISOString()
+  },'upsert');
+}
+async function sbDeleteTask(id){await sbFetch('tasks?id=eq.'+id,'DELETE')}
+async function sbSaveAgency(a){
+  await sbFetch('agency','POST',{id:a.id,idea:a.idea,date:a.date,status:a.status},'upsert');
+}
+async function sbDeleteAgency(id){await sbFetch('agency?id=eq.'+id,'DELETE')}
+async function sbSaveLearned(key,d){
+  await sbFetch('learned','POST',{key,count:d.count,total:d.total},'upsert');
+}
+async function sbSaveMeetingNote(key,mn){
+  await sbFetch('meeting_notes','POST',{key,notes:mn.notes||'',pending:mn.pending||[]},'upsert');
+}
+async function sbSaveRec(r){
+  await sbFetch('recurrents','POST',{id:r.id,name:r.name,from_day:r.fromDay,to_day:r.toDay,hours:r.hours,client:r.client||''},'upsert');
+}
+async function sbDeleteRec(id){await sbFetch('recurrents?id=eq.'+id,'DELETE')}
+async function sbSaveSchedule(){
+  await sbFetch('schedule','POST',{id:1,data:editableSchedule},'upsert');
+}
+
 // ─── STORAGE ────────────────────────────────────────────
 const LS=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}};
 const SS=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
 
-// PERMANENT keys — never change these again
 const KEY_TASKS='diego_os_tasks';
 const KEY_RECS='diego_os_recs';
 const KEY_AGENCY='diego_os_agency';
@@ -546,7 +650,6 @@ const KEY_LEARNED='diego_os_learned';
 const KEY_NOTES='diego_os_notes';
 const KEY_SCHEDULE='diego_os_schedule';
 
-// Migration: recover data from any previous version keys
 function migrateFromOldKeys(){
   const oldVersions=[
     {tasks:'dg_tasks',recs:'dg_rec',agency:'dg_agency',learned:'dg_learned'},
@@ -554,29 +657,16 @@ function migrateFromOldKeys(){
     {tasks:'dg3_tasks',recs:'dg3_recs',agency:'dg3_agency',learned:'dg3_learned',notes:'dg3_meeting_notes',schedule:'dg3_schedule'},
     {tasks:'dg4_tasks',recs:'dg4_recs',agency:'dg4_agency',learned:'dg4_learned',notes:'dg4_meeting_notes',schedule:'dg4_schedule'},
   ];
-  let migrated=false;
   for(const v of oldVersions){
     const oldTasks=LS(v.tasks,[]);
     const oldAgency=LS(v.agency||'',[]);
     const oldLearned=LS(v.learned||{},{});
-    if(oldTasks.length>0){
-      // Only migrate if current permanent store is empty
-      if(LS(KEY_TASKS,[]).length===0){
-        SS(KEY_TASKS,oldTasks);
-        console.log(`Migrated ${oldTasks.length} tasks from ${v.tasks}`);
-        migrated=true;
-      }
-    }
-    if(oldAgency.length>0&&LS(KEY_AGENCY,[]).length===0){
-      SS(KEY_AGENCY,oldAgency);migrated=true;
-    }
-    if(Object.keys(oldLearned).length>0&&Object.keys(LS(KEY_LEARNED,{})).length===0){
-      SS(KEY_LEARNED,oldLearned);migrated=true;
-    }
-    if(v.notes){const n=LS(v.notes,{});if(Object.keys(n).length>0&&Object.keys(LS(KEY_NOTES,{})).length===0){SS(KEY_NOTES,n);migrated=true}}
-    if(v.schedule){const s=LS(v.schedule,null);if(s&&!LS(KEY_SCHEDULE,null)){SS(KEY_SCHEDULE,s);migrated=true}}
+    if(oldTasks.length>0&&LS(KEY_TASKS,[]).length===0){SS(KEY_TASKS,oldTasks)}
+    if(oldAgency.length>0&&LS(KEY_AGENCY,[]).length===0){SS(KEY_AGENCY,oldAgency)}
+    if(Object.keys(oldLearned).length>0&&Object.keys(LS(KEY_LEARNED,{})).length===0){SS(KEY_LEARNED,oldLearned)}
+    if(v.notes){const n=LS(v.notes,{});if(Object.keys(n).length>0&&Object.keys(LS(KEY_NOTES,{})).length===0)SS(KEY_NOTES,n)}
+    if(v.schedule){const s=LS(v.schedule,null);if(s&&!LS(KEY_SCHEDULE,null))SS(KEY_SCHEDULE,s)}
   }
-  return migrated;
 }
 
 migrateFromOldKeys();
@@ -586,7 +676,6 @@ let recs=LS(KEY_RECS,[]);
 let agency=LS(KEY_AGENCY,[]);
 let learned=LS(KEY_LEARNED,{});
 let meetingNotes=LS(KEY_NOTES,{});
-
 let editableSchedule=LS(KEY_SCHEDULE,JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)));
 let SCHEDULE=JSON.parse(JSON.stringify(editableSchedule));
 
@@ -595,6 +684,7 @@ if(!recs.length){
   SS(KEY_RECS,recs);
 }
 
+// Save locally + sync to Supabase async
 function save(){
   SS(KEY_TASKS,tasks);SS(KEY_RECS,recs);SS(KEY_AGENCY,agency);
   SS(KEY_LEARNED,learned);SS(KEY_NOTES,meetingNotes);
@@ -646,7 +736,7 @@ function startTimer(id){
   const t=tasks.find(x=>x.id===id);if(!t)return;
   if(timerTaskId!==id)timerAccum=0;
   timerTaskId=id;timerStart=Date.now();
-  t.status='en progreso';save();
+  t.status='en progreso';save();sbSaveTask(t);
   document.getElementById('timer-pill').classList.add('active');
   document.getElementById('t-name').textContent=t.name+' · '+clientById(t.client).name;
   timerInterval=setInterval(()=>{
@@ -679,6 +769,9 @@ function stopTimer(){
     if(!t.timeLogs)t.timeLogs=[];
     t.timeLogs.push({date:todayStr(),hours:+hours.toFixed(3)});
     learnTime(t.client,t.name,hours);save();
+    sbSaveTask(t);
+    const lk=t.client+'::'+norm(t.name);
+    if(learned[lk])sbSaveLearned(lk,learned[lk]);
   }
   timerTaskId=null;timerStart=null;timerAccum=0;
   document.getElementById('timer-pill').classList.remove('active');
@@ -1075,7 +1168,7 @@ function createTaskFromMeeting(encodedKey){
     status:'sin empezar',timeLogs:[],createdAt:Date.now(),
     meetingKey:key
   };
-  tasks.push(t);save();
+  tasks.push(t);save();sbSaveTask(t);
   closeModal('modal-meeting');
   refreshAll();
   // Reopen meeting modal to show linked task
@@ -1093,16 +1186,16 @@ document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>
 // ─── STATUS / DELETE ─────────────────────────────────────
 function changeStatus(id,v){
   const t=tasks.find(x=>x.id===id);if(!t)return;
-  t.status=v;save();refreshAll();
+  t.status=v;save();sbSaveTask(t);refreshAll();
 }
-function deleteTask(id){if(!confirm('¿Eliminar esta tarea?'))return;tasks=tasks.filter(t=>t.id!==id);save();refreshAll()}
+function deleteTask(id){if(!confirm('¿Eliminar esta tarea?'))return;tasks=tasks.filter(t=>t.id!==id);save();sbDeleteTask(id);refreshAll()}
 
 function deleteTaskFromModal(){
   const id=document.getElementById('mt-title').dataset.id;
   if(!id)return;
   if(!confirm('¿Eliminar esta tarea?'))return;
   tasks=tasks.filter(t=>t.id!==id);
-  save();closeModal('modal-task');refreshAll();
+  save();sbDeleteTask(id);closeModal('modal-task');refreshAll();
 }
 
 // ─── OVERDUE ─────────────────────────────────────────────
@@ -1326,6 +1419,7 @@ function addTask(){
   const used=assignedH(date);
   if(freeH>0&&used>=freeH&&!confirm(`El día ${date} está lleno. ¿Añadir igualmente?`))return;
   tasks.push({id:'t'+Date.now(),client,name,priority:+document.getElementById('n-prio').value,date,deadline:document.getElementById('n-deadline').value,hours,notes:document.getElementById('n-notes').value.trim(),status:'sin empezar',timeLogs:[],createdAt:Date.now()});
+  save();sbSaveTask(tasks[tasks.length-1]);
   save();
   ['n-name','n-notes','n-deadline'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('n-hours').value='1';
@@ -1355,10 +1449,10 @@ function renderRecurrents(){
 
 function addRecurrent(){
   const name=document.getElementById('r-name').value.trim();if(!name)return;
-  recs.push({id:'r'+Date.now(),name,fromDay:+document.getElementById('r-from').value||5,toDay:+document.getElementById('r-to').value||15,hours:+document.getElementById('r-hours').value||4,client:document.getElementById('r-client').value});
-  save();document.getElementById('r-name').value='';renderRecurrents();
+  const r={id:'r'+Date.now(),name,fromDay:+document.getElementById('r-from').value||5,toDay:+document.getElementById('r-to').value||15,hours:+document.getElementById('r-hours').value||4,client:document.getElementById('r-client').value};
+  recs.push(r);save();sbSaveRec(r);document.getElementById('r-name').value='';renderRecurrents();
 }
-function deleteRec(id){recs=recs.filter(r=>r.id!==id);save();renderRecurrents()}
+function deleteRec(id){recs=recs.filter(r=>r.id!==id);save();sbDeleteRec(id);renderRecurrents()}
 
 function createFromRec(id){
   const r=recs.find(x=>x.id===id);if(!r)return;
@@ -1401,6 +1495,7 @@ function createFromRec(id){
   });
 
   tasks.push(...created);save();
+  created.forEach(t=>sbSaveTask(t));
   const summary=created.map(t=>`${clientById(t.client).name} → ${t.date} (${t.hours}h)`).join('\n');
   alert(`${created.length} tareas distribuidas:\n\n${summary}`);
   showView('calendario');
@@ -1421,9 +1516,9 @@ function renderAgency(){
   const cnt=agency.filter(a=>a.status!=='listo').length;
   const el2=document.getElementById('cn-ag');el2.textContent=cnt;el2.style.display=cnt>0?'':'none';
 }
-function addAgency(){const idea=document.getElementById('ag-idea').value.trim();if(!idea)return;agency.push({id:'a'+Date.now(),idea,date:todayStr(),status:'sin empezar'});save();document.getElementById('ag-idea').value='';renderAgency()}
-function changeAgStatus(id,v){const a=agency.find(x=>x.id===id);if(a){a.status=v;save();renderAgency()}}
-function delAg(id){agency=agency.filter(a=>a.id!==id);save();renderAgency()}
+function addAgency(){const idea=document.getElementById('ag-idea').value.trim();if(!idea)return;const a={id:'a'+Date.now(),idea,date:todayStr(),status:'sin empezar'};agency.push(a);save();sbSaveAgency(a);document.getElementById('ag-idea').value='';renderAgency()}
+function changeAgStatus(id,v){const a=agency.find(x=>x.id===id);if(a){a.status=v;save();sbSaveAgency(a);renderAgency()}}
+function delAg(id){agency=agency.filter(a=>a.id!==id);save();sbDeleteAgency(id);renderAgency()}
 
 // ─── LEARNED ────────────────────────────────────────────
 function renderLearned(){
@@ -1501,7 +1596,7 @@ function renderScheduleEditor(){
 function updateSlot(dow,i,f,v){if(!editableSchedule[dow])editableSchedule[dow]=[];editableSchedule[dow][i][f]=v;renderScheduleEditor()}
 function removeSlot(dow,i){editableSchedule[dow].splice(i,1);renderScheduleEditor()}
 function addSlot(dow){if(!editableSchedule[dow])editableSchedule[dow]=[];editableSchedule[dow].push({s:'10:00',e:'12:00'});renderScheduleEditor()}
-function saveSchedule(){SS(KEY_SCHEDULE,editableSchedule);Object.assign(SCHEDULE,editableSchedule);alert('Horarios guardados.');showView('calendario')}
+function saveSchedule(){SS(KEY_SCHEDULE,editableSchedule);Object.assign(SCHEDULE,editableSchedule);sbSaveSchedule();alert('Horarios guardados.');showView('calendario')}
 function resetSchedule(){if(!confirm('¿Restaurar horarios por defecto?'))return;editableSchedule=JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));Object.assign(SCHEDULE,editableSchedule);SS(KEY_SCHEDULE,editableSchedule);renderScheduleEditor()}
 
 // ─── SIDEBAR ────────────────────────────────────────────
@@ -1625,18 +1720,24 @@ initSelects();renderSidebar();updateTopDate();
 updateOverdueBadge();
 selectedDay=todayStr();
 showView('calendario');
-// Alert on load if overdue tasks exist
-setTimeout(()=>{
-  const cnt=getOverdueTasks().length;
-  if(cnt>0){
-    const banner=document.createElement('div');
-    banner.style.cssText='position:fixed;top:60px;right:16px;z-index:200;background:#fff;border:1px solid rgba(192,57,43,.4);border-left:3px solid var(--red);border-radius:8px;padding:10px 14px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.1);display:flex;align-items:center;gap:10px;font-family:var(--fb);max-width:300px;cursor:pointer';
-    banner.innerHTML=`<span style="color:var(--red);font-size:16px">⚠</span><span style="flex:1"><strong style="font-family:var(--fh);color:var(--red)">${cnt} tarea${cnt!==1?'s':''} vencida${cnt!==1?'s':''}</strong><br><span style="font-size:11px;color:var(--text2)">Haz clic para revisarlas</span></span><button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:0 2px">✕</button>`;
-    banner.addEventListener('click',e=>{if(e.target.tagName!=='BUTTON'){banner.remove();showView('vencidas')}});
-    document.body.appendChild(banner);
-    setTimeout(()=>{if(banner.parentElement)banner.remove()},8000);
-  }
-},1000);
+
+// Load from Supabase and refresh
+loadFromSupabase().then(()=>{
+  initSelects();renderSidebar();updateOverdueBadge();
+  showView('calendario');
+  setTimeout(()=>{
+    const cnt=getOverdueTasks().length;
+    if(cnt>0){
+      const banner=document.createElement('div');
+      banner.style.cssText='position:fixed;top:60px;right:16px;z-index:200;background:#fff;border:1px solid rgba(192,57,43,.4);border-left:3px solid var(--red);border-radius:8px;padding:10px 14px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.1);display:flex;align-items:center;gap:10px;font-family:var(--fb);max-width:300px;cursor:pointer';
+      banner.innerHTML=`<span style="color:var(--red);font-size:16px">⚠</span><span style="flex:1"><strong style="font-family:var(--fh);color:var(--red)">${cnt} tarea${cnt!==1?'s':''} vencida${cnt!==1?'s':''}</strong><br><span style="font-size:11px;color:var(--text2)">Haz clic para revisarlas</span></span><button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:0 2px">✕</button>`;
+      banner.addEventListener('click',e=>{if(e.target.tagName!=='BUTTON'){banner.remove();showView('vencidas')}});
+      document.body.appendChild(banner);
+      setTimeout(()=>{if(banner.parentElement)banner.remove()},8000);
+    }
+  },500);
+}).catch(e=>console.error('Supabase load error',e));
+
 setInterval(updateTopDate,60000);
 </script>
 </body>
