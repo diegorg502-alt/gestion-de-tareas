@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diego.OS — Gestor de tareas</title>
+<title>Diego.OS</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#f5f4f1;--bg2:#ffffff;--bg3:#f0eeea;--bg4:#e8e6e1;
+  --bg:#f5f4f1;--bg2:#fff;--bg3:#f0eeea;--bg4:#e8e6e1;
   --border:#e0ddd6;--border2:#ccc9c0;
   --text:#1a1816;--text2:#6b6760;--text3:#a09d96;
   --accent:#8a6a4a;--accent2:#6b5038;
@@ -20,453 +20,494 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .app{display:grid;grid-template-columns:210px 1fr;grid-template-rows:52px 1fr;height:100vh}
 
 /* TOPBAR */
-.topbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg);z-index:10}
-.logo{font-family:var(--fh);font-size:15px;font-weight:700;letter-spacing:-0.5px}
+.topbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg2);z-index:10}
+.logo{font-family:var(--fh);font-size:15px;font-weight:700;letter-spacing:-.5px;color:var(--text)}
 .logo span{color:var(--accent)}
 .top-date{font-size:11px;color:var(--text3);margin-left:12px}
+.top-right{display:flex;align-items:center;gap:8px}
 .timer-pill{display:none;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 12px;font-size:12px}
 .timer-pill.active{display:flex;border-color:var(--red)}
 .tdot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.tname{font-size:11px;color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tname{font-size:11px;color:var(--text2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tbtn{height:24px;padding:0 8px;border:none;border-radius:4px;font-size:11px;cursor:pointer;font-family:var(--fb)}
 .tbtn-stop{background:var(--red);color:#fff}
 .tbtn-cancel{background:transparent;color:var(--text3);text-decoration:underline}
+.gcal-btn{display:flex;align-items:center;gap:6px;height:30px;padding:0 12px;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--text2);cursor:pointer;font-size:12px;font-family:var(--fb);transition:all .15s}
+.gcal-btn:hover{background:var(--bg3);color:var(--text)}
+.gcal-btn.connected{border-color:rgba(46,125,79,.4);color:var(--green)}
+.gcal-icon{width:12px;height:12px;border-radius:2px;background:linear-gradient(135deg,#4285f4,#34a853,#fbbc05,#ea4335);flex-shrink:0}
 
 /* SIDEBAR */
-.sidebar{background:var(--bg3);border-right:1px solid var(--border);overflow-y:auto;padding:16px 0;display:flex;flex-direction:column}
+.sidebar{background:var(--bg3);border-right:1px solid var(--border);overflow-y:auto;padding:14px 0;display:flex;flex-direction:column}
 .nav-lbl{font-size:10px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;padding:10px 16px 4px;font-family:var(--fh);font-weight:600}
 .nav-item{display:flex;align-items:center;gap:8px;padding:6px 10px;margin:0 6px;border-radius:6px;cursor:pointer;color:var(--text2);font-size:12px;border:none;background:none;width:calc(100% - 12px);text-align:left;font-family:var(--fb);transition:all .15s}
-.nav-item:hover{background:var(--bg3);color:var(--text)}
-.nav-item.active{background:var(--bg4);color:var(--text);border:1px solid var(--border2)}
+.nav-item:hover{background:var(--bg4);color:var(--text)}
+.nav-item.active{background:var(--bg2);color:var(--text);border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.06)}
 .nav-item .icon{width:14px;text-align:center;font-size:12px;flex-shrink:0}
-.nav-cnt{margin-left:auto;font-size:10px;background:var(--bg4);border:1px solid var(--border);padding:1px 5px;border-radius:8px;color:var(--text3)}
+.nav-cnt{margin-left:auto;font-size:10px;background:var(--accent);color:#fff;padding:1px 6px;border-radius:8px;font-weight:600}
 .cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
 /* MAIN */
 .main{overflow-y:auto;background:var(--bg)}
-.view{display:none;padding:24px 28px;min-height:100%}
-.view.active{display:block;animation:fadeIn .18s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.view{display:none;padding:20px 24px;min-height:100%;flex-direction:column}
+.view.active{display:flex;animation:fadeIn .15s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
 
 /* TYPE */
-h1{font-family:var(--fh);font-size:20px;font-weight:700;letter-spacing:-.5px}
-h2{font-family:var(--fh);font-size:14px;font-weight:600;margin-bottom:10px}
-h3{font-family:var(--fh);font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+h1{font-family:var(--fh);font-size:19px;font-weight:700;letter-spacing:-.5px}
+h2{font-family:var(--fh);font-size:13px;font-weight:600;margin-bottom:8px}
+h3{font-family:var(--fh);font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
 
 /* CARDS */
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 20px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 18px}
 
-/* METRICS */
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
-.metric{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
-.metric .ml{font-size:10px;color:var(--text3);font-family:var(--fh);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
-.metric .mv{font-size:22px;font-weight:700;font-family:var(--fh)}
-.metric .ms{font-size:11px;color:var(--text2);margin-top:1px}
+/* FORM */
+.fg{display:flex;flex-direction:column;gap:10px}
+.fr{display:grid;gap:8px}
+.fr2{grid-template-columns:1fr 1fr}
+.fr3{grid-template-columns:1fr 1fr 1fr}
+.fr4{grid-template-columns:1fr 1fr 1fr 1fr}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:10px;color:var(--text2);font-family:var(--fh);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.field input,.field select,.field textarea{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px;padding:7px 10px;font-family:var(--fb);transition:border .15s;color-scheme:light}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+.field textarea{resize:vertical;min-height:60px}
+.hint-box{background:rgba(46,125,79,.06);border:1px solid rgba(46,125,79,.2);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--green);display:none}
+.hint-box.on{display:block}
+.day-preview{border-radius:6px;padding:7px 10px;font-size:12px;display:none;border:1px solid}
+.day-preview.on{display:block}
+.day-preview.ok{background:rgba(46,125,79,.05);border-color:rgba(46,125,79,.2);color:var(--green)}
+.day-preview.warn{background:rgba(192,120,48,.05);border-color:rgba(192,120,48,.2);color:var(--amber)}
+.day-preview.full{background:rgba(192,57,43,.05);border-color:rgba(192,57,43,.2);color:var(--red)}
+.btn-primary{height:36px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;font-family:var(--fh);cursor:pointer;transition:opacity .15s;padding:0 20px}
+.btn-primary:hover{opacity:.85}
 
-/* BAR */
-.bar-wrap{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;margin:8px 0 4px}
-.bar-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .4s}
-.bar-fill.warn{background:var(--amber)}
-.bar-fill.over{background:var(--red)}
+/* CALENDAR VIEW */
+.cal-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.cal-nav-btn{height:28px;padding:0 10px;border:1px solid var(--border2);border-radius:5px;background:var(--bg2);color:var(--text2);cursor:pointer;font-size:12px;font-family:var(--fb);transition:all .15s}
+.cal-nav-btn:hover{background:var(--bg3);color:var(--text)}
+.cal-nav-btn.active-mode{background:var(--accent);color:#fff;border-color:var(--accent)}
+.cal-title{font-family:var(--fh);font-size:15px;font-weight:700;flex:1}
+.week-cols{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;flex:1;min-height:0}
+.week-col{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;flex-direction:column;min-height:200px;cursor:pointer;transition:border-color .15s}
+.week-col:hover{border-color:var(--border2)}
+.week-col.today-col{border-color:var(--accent);border-width:2px}
+.week-col.selected-col{background:var(--bg3)}
+.week-col.full-col{border-color:var(--red)}
+.wc-head{margin-bottom:8px}
+.wc-day{font-size:10px;font-family:var(--fh);font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text2)}
+.wc-num{font-size:20px;font-weight:700;font-family:var(--fh);color:var(--text);line-height:1.1}
+.wc-free{font-size:10px;color:var(--text3);margin-top:2px}
+.wc-bar{height:3px;background:var(--bg4);border-radius:2px;margin-top:5px;overflow:hidden}
+.wc-bar-fill{height:100%;border-radius:2px;background:var(--green);transition:width .3s}
+.wc-bar-fill.warn{background:var(--amber)}
+.wc-bar-fill.over{background:var(--red)}
+.wc-items{margin-top:6px;display:flex;flex-direction:column;gap:2px;flex:1}
+.wc-event{font-size:10px;padding:2px 5px;border-radius:3px;border-left:2px solid;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wc-event.cal-ev{border-left-color:var(--blue);color:var(--blue);background:rgba(37,99,168,.06)}
+.wc-event.task-ev{border-left-color:var(--accent);color:var(--text2);background:var(--bg3)}
+.wc-more{font-size:10px;color:var(--text3);padding:1px 5px}
 
-/* SLOTS */
-.slot-pill{background:rgba(138,106,74,.08);border:1px solid rgba(138,106,74,.2);border-radius:20px;padding:3px 9px;font-size:11px;color:var(--accent)}
+/* DAY DETAIL */
+.day-detail{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-top:12px}
+.day-detail-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.slot-pill{background:rgba(138,106,74,.08);border:1px solid rgba(138,106,74,.2);border-radius:20px;padding:2px 8px;font-size:11px;color:var(--accent)}
+.cal-event-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;border-radius:4px;margin:0 -4px;padding-left:4px}
+.cal-event-row:hover{background:var(--bg3)}
+.cal-event-row:last-child{border-bottom:none}
+.cal-ev-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0}
+.cal-ev-time{font-size:11px;color:var(--text2);width:85px;flex-shrink:0}
+.cal-ev-name{font-size:12px;color:var(--text);flex:1}
+.cal-ev-note-badge{font-size:10px;background:rgba(37,99,168,.08);color:var(--blue);border:1px solid rgba(37,99,168,.2);border-radius:3px;padding:1px 5px}
+.free-badge{font-size:12px;font-weight:600;color:var(--green)}
+.free-badge.warn{color:var(--amber)}
+.free-badge.over{color:var(--red)}
 
-/* TASKS */
-.task-row{display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:start;padding:11px 0;border-bottom:1px solid var(--border);transition:background .1s;cursor:default}
+/* TASK ROWS IN DAY */
+.task-row{display:grid;grid-template-columns:20px 1fr auto;gap:8px;align-items:start;padding:9px 0;border-bottom:1px solid var(--border);transition:background .1s}
 .task-row:last-child{border-bottom:none}
-.task-row:hover{background:var(--bg3);margin:0 -20px;padding:11px 20px;border-radius:6px;border-bottom-color:transparent}
+.task-row:hover{background:var(--bg3);margin:0 -18px;padding:9px 18px;border-radius:6px;border-bottom-color:transparent}
 .task-row.dragging{opacity:.4}
 .task-row.drag-over{border-top:2px solid var(--accent)}
-.pnum{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:var(--fh);flex-shrink:0;margin-top:1px}
+.pnum{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:var(--fh);flex-shrink:0;margin-top:2px}
 .p1{background:rgba(192,57,43,.1);color:var(--red);border:1px solid rgba(192,57,43,.25)}
 .p2{background:rgba(192,120,48,.1);color:var(--amber);border:1px solid rgba(192,120,48,.25)}
 .p3{background:rgba(46,125,79,.1);color:var(--green);border:1px solid rgba(46,125,79,.25)}
-.tname-el{font-size:13px;font-weight:500;color:var(--text);font-family:var(--fh);margin-bottom:3px;cursor:pointer}
+.tname-el{font-size:13px;font-weight:500;color:var(--text);font-family:var(--fh);margin-bottom:2px;cursor:pointer}
 .tname-el:hover{color:var(--accent);text-decoration:underline}
 .task-done .tname-el{text-decoration:line-through;color:var(--text3)}
-.tmeta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:4px;font-size:11px}
+.tmeta{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.tag{display:inline-flex;align-items:center;gap:3px;padding:1px 5px;border-radius:3px;font-size:11px}
 .tag-c{color:var(--text2);border:1px solid var(--border2)}
 .tag-h{color:var(--text3)}
 .tag-dl{color:var(--amber)}
 .tag-lrn{color:var(--green);font-style:italic}
-.sbadge{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:500;font-family:var(--fh);text-transform:uppercase;letter-spacing:.04em}
+.sbadge{padding:1px 6px;border-radius:3px;font-size:10px;font-weight:500;font-family:var(--fh);text-transform:uppercase;letter-spacing:.04em}
 .s0{background:rgba(160,157,150,.15);color:var(--text2);border:1px solid var(--border2)}
 .s1{background:rgba(37,99,168,.1);color:var(--blue);border:1px solid rgba(37,99,168,.25)}
 .s2{background:rgba(46,125,79,.1);color:var(--green);border:1px solid rgba(46,125,79,.25)}
-.tacts{display:flex;gap:5px;align-items:center;flex-shrink:0;padding-top:1px}
-.bsm{height:26px;padding:0 9px;border:1px solid var(--border2);border-radius:5px;background:transparent;color:var(--text2);cursor:pointer;font-size:11px;font-family:var(--fb);white-space:nowrap;transition:all .15s}
+.tacts{display:flex;gap:4px;align-items:center;flex-shrink:0}
+.bsm{height:24px;padding:0 8px;border:1px solid var(--border2);border-radius:4px;background:transparent;color:var(--text2);cursor:pointer;font-size:11px;font-family:var(--fb);white-space:nowrap;transition:all .15s}
 .bsm:hover{border-color:var(--border);color:var(--text);background:var(--bg3)}
 .bstart{border-color:rgba(138,106,74,.4);color:var(--accent)}
 .bstart:hover{border-color:var(--accent);background:rgba(138,106,74,.06)}
-.bdel:hover{border-color:rgba(224,90,74,.4);color:var(--red)}
-.mini-sel{height:24px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text2);font-size:11px;padding:0 4px;font-family:var(--fb);cursor:pointer}
-.mini-date{height:24px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text2);font-size:11px;padding:0 5px;font-family:var(--fb);color-scheme:dark}
+.bdel:hover{border-color:rgba(192,57,43,.4);color:var(--red)}
+.mini-sel{height:22px;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;color:var(--text2);font-size:11px;padding:0 3px;font-family:var(--fb);cursor:pointer}
 
-/* FORM */
-.fg{display:flex;flex-direction:column;gap:12px}
-.fr{display:grid;gap:10px}
-.fr2{grid-template-columns:1fr 1fr}
-.fr3{grid-template-columns:1fr 1fr 1fr}
-.fr4{grid-template-columns:1fr 1fr 1fr 1fr}
-.field{display:flex;flex-direction:column;gap:4px}
-.field label{font-size:10px;color:var(--text2);font-family:var(--fh);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
-.field input,.field select,.field textarea{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px;padding:7px 10px;font-family:var(--fb);transition:border .15s;color-scheme:dark}
-.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent2)}
-.field textarea{resize:vertical;min-height:64px}
-.hint-box{background:rgba(46,125,79,.06);border:1px solid rgba(46,125,79,.2);border-radius:6px;padding:7px 12px;font-size:12px;color:var(--green);display:none}
-.hint-box.on{display:block}
-.capacity-warn{background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.2);border-radius:6px;padding:7px 12px;font-size:12px;color:var(--red);display:none}
-.capacity-warn.on{display:block}
-.btn-primary{height:38px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;font-family:var(--fh);cursor:pointer;letter-spacing:.02em;transition:opacity .15s}
-.btn-primary:hover{opacity:.88}
+/* KANBAN */
+.kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:1}
+.kb-col{background:var(--bg3);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:300px}
+.kb-col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.kb-col-title{font-family:var(--fh);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2)}
+.kb-cnt{font-size:11px;background:var(--bg4);border:1px solid var(--border);border-radius:10px;padding:1px 7px;color:var(--text3)}
+.kb-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:5px}
+.kb-card:hover{border-color:var(--border2);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.kb-card.dragging{opacity:.4}
+.kb-card-name{font-size:12px;font-weight:500;font-family:var(--fh);color:var(--text)}
+.kb-card-meta{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.kb-filter{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.kb-filter select{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--text2);font-size:12px;padding:4px 8px;font-family:var(--fb);height:28px}
 
-/* WEEK */
-.week-nav{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.week-nav button{height:28px;padding:0 10px;border:1px solid var(--border2);border-radius:5px;background:transparent;color:var(--text2);cursor:pointer;font-size:12px;font-family:var(--fb)}
-.week-nav button:hover{background:var(--bg3);color:var(--text)}
-.week-nav .wk-label{font-family:var(--fh);font-size:14px;font-weight:600;color:var(--text)}
-.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px}
-.wday{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 8px;cursor:pointer;transition:all .15s;min-height:80px}
-.wday:hover{border-color:var(--border2);background:var(--bg3)}
-.wday.selected{border-color:var(--accent);background:rgba(212,184,150,.06)}
-.wday.today-col{border-color:var(--accent2)}
-.wday.full-day{border-color:var(--red);opacity:.7}
-.wd-name{font-size:10px;font-family:var(--fh);font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:2px}
-.wd-num{font-size:18px;font-weight:700;font-family:var(--fh);line-height:1;color:var(--text)}
-.wd-free{font-size:10px;color:var(--text3);margin-top:2px}
-.wd-tasks{margin-top:5px;display:flex;flex-direction:column;gap:2px}
-.wd-mini{font-size:10px;color:var(--text2);padding:2px 5px;background:var(--bg3);border-radius:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:2px solid}
-.wd-more{font-size:10px;color:var(--text3);margin-top:2px;padding-left:5px}
-.week-day-tasks{margin-top:0}
-
-/* MODAL */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
-.modal-bg.open{display:flex}
-.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;width:100%;max-width:560px;max-height:85vh;overflow-y:auto}
-.modal-head{display:flex;align-items:flex-start;justify-content:space-between;padding:20px 20px 0}
-.modal-title{font-family:var(--fh);font-size:16px;font-weight:700;color:var(--text);flex:1;margin-right:12px}
-.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0 4px;line-height:1}
-.modal-close:hover{color:var(--text)}
-.modal-body{padding:16px 20px 20px}
-.detail-row{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
-.detail-lbl{font-size:11px;color:var(--text3);width:110px;flex-shrink:0;padding-top:1px;font-family:var(--fh);text-transform:uppercase;letter-spacing:.05em}
-.detail-val{font-size:13px;color:var(--text);flex:1}
-.log-entry{padding:8px 10px;background:var(--bg3);border-radius:6px;margin-bottom:6px;border-left:2px solid var(--accent)}
-.log-date{font-size:11px;color:var(--text3);margin-bottom:2px}
-.log-dur{font-size:13px;font-weight:500;color:var(--accent)}
-.log-total{font-size:12px;color:var(--text2);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
-.modal-actions{display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+/* CLIENT MEMORY */
+.memory-client-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:16px}
+.memory-client-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;transition:all .15s}
+.memory-client-card:hover{border-color:var(--border2);box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.memory-task-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.memory-task-item:last-child{border-bottom:none}
+.memory-task-date{font-size:11px;color:var(--text3);width:80px;flex-shrink:0}
+.memory-task-name{font-size:13px;color:var(--text);flex:1;font-family:var(--fh);font-weight:500}
+.memory-task-time{font-size:11px;color:var(--accent);font-weight:600;flex-shrink:0}
 
 /* RECURRENTS */
-.rec-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
+.rec-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
 .rec-item:last-child{border-bottom:none}
-.rec-period{font-size:11px;font-family:var(--fb);background:var(--bg4);padding:3px 8px;border-radius:4px;color:var(--text2);white-space:nowrap}
+.rec-period{font-size:11px;font-family:var(--fb);background:var(--bg4);padding:2px 7px;border-radius:4px;color:var(--text2);white-space:nowrap}
 .rec-active{color:var(--blue);background:rgba(37,99,168,.08);border:1px solid rgba(37,99,168,.2);padding:2px 7px;border-radius:4px;font-size:10px;font-family:var(--fh);font-weight:600;text-transform:uppercase}
 .rec-inactive{color:var(--text3);font-size:10px;font-family:var(--fh);text-transform:uppercase}
 
 /* AGENCY */
-.ag-item{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border)}
+.ag-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
 .ag-item:last-child{border-bottom:none}
 
-/* LEARNED */
-.lrn-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
-.lrn-item:last-child{border-bottom:none}
-
-/* FILTER BAR */
-.filter-bar{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap}
-.filter-bar select,.filter-bar input{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--text2);font-size:12px;padding:5px 9px;font-family:var(--fb);height:30px;color-scheme:dark}
-
-/* EMPTY */
-.empty{text-align:center;padding:36px 20px;color:var(--text3);font-size:13px}
-.ei{font-size:24px;margin-bottom:8px;opacity:.4}
-
-/* DRAG INDICATOR */
-.drop-zone{border:2px dashed var(--accent2);border-radius:6px;padding:12px;margin:4px 0;text-align:center;font-size:12px;color:var(--accent2);display:none}
-.drop-zone.visible{display:block}
-
-/* GOOGLE CAL */
-.gcal-btn{display:flex;align-items:center;gap:7px;height:32px;padding:0 14px;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--text2);cursor:pointer;font-size:12px;font-family:var(--fb);transition:all .15s}
-.gcal-btn:hover{border-color:var(--border);color:var(--text);background:var(--bg3)}
-.gcal-btn.connected{border-color:rgba(46,125,79,.4);color:var(--green)}
-.gcal-icon{width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#4285f4,#34a853,#fbbc05,#ea4335);flex-shrink:0}
-.cal-event{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
-.cal-event:last-child{border-bottom:none}
-.cal-event-time{font-size:11px;color:var(--text2);width:90px;flex-shrink:0;font-family:var(--fb)}
-.cal-event-name{font-size:12px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cal-event-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0}
-.settings-section{margin-bottom:20px}
-.schedule-editor{display:flex;flex-direction:column;gap:8px}
-.sched-row{display:grid;grid-template-columns:80px 1fr;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+/* SCHEDULE EDITOR */
+.sched-row{display:grid;grid-template-columns:100px 1fr;gap:10px;align-items:start;padding:8px 0;border-bottom:1px solid var(--border)}
 .sched-row:last-child{border-bottom:none}
-.sched-day{font-size:12px;color:var(--text2);font-family:var(--fh);font-weight:600}
-.sched-slots{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.sched-slot{display:flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;padding:3px 8px;font-size:11px;color:var(--text2)}
-.sched-slot input{background:transparent;border:none;color:var(--text);font-size:11px;font-family:var(--fb);width:48px;text-align:center}
+.sched-day{font-size:12px;color:var(--text);font-family:var(--fh);font-weight:600}
+.sched-slots{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.sched-slot{display:flex;align-items:center;gap:3px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;padding:3px 7px;font-size:11px;color:var(--text2)}
+.sched-slot input{background:transparent;border:none;color:var(--text);font-size:11px;font-family:var(--fb);width:46px;text-align:center;color-scheme:light}
 .sched-slot input:focus{outline:none}
 .sched-slot .rm{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:0 2px;line-height:1}
 .sched-slot .rm:hover{color:var(--red)}
-.add-slot{height:24px;padding:0 8px;border:1px dashed var(--border2);border-radius:5px;background:transparent;color:var(--text3);cursor:pointer;font-size:11px;font-family:var(--fb)}
-.add-slot:hover{border-color:var(--accent2);color:var(--accent)}
-.free-remaining{font-size:12px;color:var(--green);margin-top:4px}
-.free-remaining.warn{color:var(--amber)}
-.free-remaining.over{color:var(--red)}
+.add-slot{height:22px;padding:0 8px;border:1px dashed var(--border2);border-radius:4px;background:transparent;color:var(--text3);cursor:pointer;font-size:11px;font-family:var(--fb)}
+.add-slot:hover{border-color:var(--accent);color:var(--accent)}
+
+/* LEARNED */
+.lrn-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;border-radius:4px;margin:0 -4px;padding-left:4px;transition:background .1s}
+.lrn-item:last-child{border-bottom:none}
+.lrn-item:hover{background:var(--bg3)}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;width:100%;max-width:520px;max-height:82vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.12)}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;padding:18px 18px 0}
+.modal-title{font-family:var(--fh);font-size:15px;font-weight:700;color:var(--text);flex:1;margin-right:10px}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0 4px;line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:14px 18px 18px}
+.detail-row{display:flex;gap:8px;margin-bottom:7px;align-items:flex-start}
+.detail-lbl{font-size:10px;color:var(--text3);width:100px;flex-shrink:0;padding-top:1px;font-family:var(--fh);text-transform:uppercase;letter-spacing:.05em}
+.detail-val{font-size:13px;color:var(--text);flex:1}
+.log-entry{padding:7px 10px;background:var(--bg3);border-radius:6px;margin-bottom:5px;border-left:2px solid var(--accent)}
+.log-date{font-size:11px;color:var(--text3);margin-bottom:1px}
+.log-dur{font-size:13px;font-weight:500;color:var(--accent)}
+.log-total{font-size:12px;color:var(--text2);margin-top:7px;padding-top:7px;border-top:1px solid var(--border)}
+.modal-actions{display:flex;gap:7px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap}
+
+/* MEETING NOTES MODAL */
+.meeting-notes-area{width:100%;min-height:80px;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px;padding:8px 10px;font-family:var(--fb);resize:vertical}
+.meeting-notes-area:focus{outline:none;border-color:var(--accent)}
+.pending-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
+.pending-item:last-child{border-bottom:none}
+.pending-check{width:14px;height:14px;cursor:pointer;flex-shrink:0}
+.pending-text{flex:1;font-size:13px;color:var(--text)}
+.pending-text.done-text{text-decoration:line-through;color:var(--text3)}
+.pending-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:0 3px}
+.pending-del:hover{color:var(--red)}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.filter-bar select,.filter-bar input{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--text2);font-size:12px;padding:4px 8px;font-family:var(--fb);height:28px;color-scheme:light}
+
+/* EMPTY */
+.empty{text-align:center;padding:30px 20px;color:var(--text3);font-size:13px}
+.ei{font-size:22px;margin-bottom:6px;opacity:.4}
+
+/* BAR */
+.bar-wrap{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;background:var(--green);transition:width .3s}
+.bar-fill.warn{background:var(--amber)}
+.bar-fill.over{background:var(--red)}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 </style>
 </head>
 <body>
 <div class="app">
 
-<!-- TOPBAR -->
 <header class="topbar">
   <div style="display:flex;align-items:center;gap:8px">
     <div class="logo">Diego<span>.</span>OS</div>
     <div class="top-date" id="top-date"></div>
   </div>
-  <div style="display:flex;align-items:center;gap:8px">
+  <div class="top-right">
+    <div class="timer-pill" id="timer-pill">
+      <span class="tdot"></span>
+      <span id="t-disp">00:00:00</span>
+      <span class="tname" id="t-name">—</span>
+      <button class="tbtn tbtn-stop" id="tbtn-main" onclick="pauseTimer()">❙❙ Pausar</button>
+      <button class="tbtn" style="background:var(--red);color:#fff;margin-left:2px" onclick="stopTimer()">■</button>
+      <button class="tbtn tbtn-cancel" onclick="cancelTimer()">✕</button>
+    </div>
     <button class="gcal-btn" id="gcal-btn" onclick="gcalAuth()">
-      <span class="gcal-icon"></span>
-      <span id="gcal-label">Conectar Google Calendar</span>
+      <span class="gcal-icon"></span><span id="gcal-label">Conectar Calendar</span>
     </button>
-    <button class="gcal-btn" onclick="showView('ajustes')" title="Configurar horarios">⚙ Horarios</button>
-  </div>
-  <div class="timer-pill" id="timer-pill">
-    <span class="tdot"></span>
-    <span id="t-disp">00:00:00</span>
-    <span class="tname" id="t-name">—</span>
-    <button class="tbtn tbtn-stop" onclick="stopTimer()">■ Detener</button>
-    <button class="tbtn tbtn-cancel" onclick="cancelTimer()">✕</button>
+    <button class="gcal-btn" onclick="showView('ajustes')">⚙ Horarios</button>
   </div>
 </header>
 
-<!-- SIDEBAR -->
 <nav class="sidebar">
   <div class="nav-lbl">Vistas</div>
-  <button class="nav-item active" onclick="showView('hoy')"><span class="icon">◈</span>Hoy<span class="nav-cnt" id="cn-hoy">0</span></button>
-  <button class="nav-item" onclick="showView('semana')"><span class="icon">▦</span>Semana</button>
-  <button class="nav-item" onclick="showView('todas')"><span class="icon">≡</span>Todas<span class="nav-cnt" id="cn-todas">0</span></button>
+  <button class="nav-item active" onclick="showView('calendario')"><span class="icon">◈</span>Calendario<span class="nav-cnt" id="cn-cal" style="display:none">0</span></button>
+  <button class="nav-item" onclick="showView('kanban')"><span class="icon">▦</span>Tareas<span class="nav-cnt" id="cn-kb" style="display:none">0</span></button>
+  <button class="nav-item" onclick="showView('memoria')"><span class="icon">◎</span>Memoria</button>
   <div class="nav-lbl">Crear</div>
   <button class="nav-item" onclick="showView('nueva')"><span class="icon">+</span>Nueva tarea</button>
   <button class="nav-item" onclick="showView('recurrentes')"><span class="icon">↻</span>Recurrentes</button>
-  <button class="nav-item" onclick="showView('agencia')"><span class="icon">⊡</span>Agencia<span class="nav-cnt" id="cn-ag">0</span></button>
+  <button class="nav-item" onclick="showView('agencia')"><span class="icon">⊡</span>Agencia<span class="nav-cnt" id="cn-ag" style="display:none">0</span></button>
   <div class="nav-lbl">Sistema</div>
-  <button class="nav-item" onclick="showView('aprendizaje')"><span class="icon">◎</span>Tiempos</button>
+  <button class="nav-item" onclick="showView('tiempos')"><span class="icon">◷</span>Tiempos</button>
   <div class="nav-lbl" style="margin-top:auto">Clientes</div>
   <div id="sb-clients"></div>
 </nav>
 
-<!-- MAIN -->
 <main class="main">
 
-  <!-- HOY -->
-  <div class="view active" id="view-hoy">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div>
-        <h1 id="hoy-title">Hoy</h1>
-        <div style="font-size:12px;color:var(--text2);margin-top:3px" id="hoy-free-desc"></div>
-      </div>
-      <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;max-width:280px" id="hoy-slots"></div>
-    </div>
-    <div class="metrics" id="hoy-metrics"></div>
-    <div style="margin-bottom:16px">
-      <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:11px;color:var(--text2);width:110px">Ocupación</span>
-        <div class="bar-wrap" style="flex:1;margin:0"><div class="bar-fill" id="hoy-bar" style="width:0%"></div></div>
-        <span style="font-size:11px;color:var(--text2);width:35px;text-align:right" id="hoy-pct">0%</span>
-      </div>
-      <div style="font-size:11px;color:var(--text3);margin-top:3px;margin-left:120px" id="hoy-bar-detail"></div>
-    </div>
-    <h2>Tareas de hoy</h2>
-    <div style="display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start">
-      <div class="card" style="padding:0 20px"><div id="hoy-list"></div></div>
-      <div>
-        <div class="card" style="margin-bottom:10px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <h3 style="margin:0">Reuniones hoy</h3>
-            <span id="gcal-status" style="font-size:10px;color:var(--text3)">Sin conectar</span>
-          </div>
-          <div id="cal-events-list"><div style="font-size:12px;color:var(--text3);text-align:center;padding:16px">Conecta Google Calendar<br>para ver tus reuniones</div></div>
-          <div id="free-after-meetings" class="free-remaining" style="display:none"></div>
-        </div>
-      </div>
-    </div>
+<!-- CALENDARIO -->
+<div class="view active" id="view-calendario">
+  <div class="cal-header">
+    <button class="cal-nav-btn" id="btn-prev" onclick="calNav(-1)">←</button>
+    <button class="cal-nav-btn" id="btn-next" onclick="calNav(1)">→</button>
+    <button class="cal-nav-btn" onclick="calGoToday()">Hoy</button>
+    <span class="cal-title" id="cal-title"></span>
+    <button class="cal-nav-btn active-mode" id="btn-mode-week" onclick="setCalMode('week')">Semana</button>
+    <button class="cal-nav-btn" id="btn-mode-day" onclick="setCalMode('day')">Día</button>
+    <button class="btn-primary" onclick="showView('nueva')" style="height:28px;font-size:12px;padding:0 12px;margin-left:6px">+ Nueva tarea</button>
   </div>
+  <div class="week-cols" id="cal-week-cols"></div>
+  <div class="day-detail" id="cal-day-detail" style="display:none"></div>
+</div>
 
-  <!-- SEMANA -->
-  <div class="view" id="view-semana">
-    <div class="week-nav">
-      <button onclick="weekOffset--;renderWeek();if(gcalToken)fetchCalendarEvents()">←</button>
-      <span class="wk-label" id="wk-label"></span>
-      <button onclick="weekOffset++;renderWeek();if(gcalToken)fetchCalendarEvents()">→</button>
-      <button onclick="weekOffset=0;renderWeek();if(gcalToken)fetchCalendarEvents()" style="margin-left:4px;font-size:11px">Hoy</button>
-    </div>
-    <div class="week-grid" id="week-grid"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <h2 id="week-day-label" style="margin:0">Selecciona un día</h2>
-      <div style="font-size:11px;color:var(--text3)" id="week-day-cap"></div>
-    </div>
-    <div class="card" style="padding:0 20px"><div id="week-day-list"><div class="empty"><div class="ei">▦</div>Haz clic en un día para ver sus tareas</div></div></div>
-  </div>
-
-  <!-- TODAS -->
-  <div class="view" id="view-todas">
-    <h1 style="margin-bottom:14px">Todas las tareas</h1>
-    <div class="filter-bar">
-      <select id="f-client" onchange="renderAll()"><option value="">Todos los clientes</option></select>
-      <select id="f-status" onchange="renderAll()">
-        <option value="">Todos los estados</option>
-        <option>sin empezar</option><option>en progreso</option><option>listo</option>
-      </select>
-      <select id="f-prio" onchange="renderAll()">
+<!-- KANBAN -->
+<div class="view" id="view-kanban">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <h1>Tareas</h1>
+    <div class="kb-filter">
+      <select id="kb-client" onchange="renderKanban()"><option value="">Todos los clientes</option></select>
+      <select id="kb-prio" onchange="renderKanban()">
         <option value="">Todas las prioridades</option>
         <option value="1">Crítico</option><option value="2">Importante</option><option value="3">Normal</option>
       </select>
-      <input type="date" id="f-date" onchange="renderAll()" title="Filtrar por fecha" style="color-scheme:dark">
     </div>
-    <div class="card" style="padding:0 20px"><div id="all-list"></div></div>
   </div>
+  <div class="kanban">
+    <div class="kb-col" id="kb-pending" ondragover="kbDragOver(event,'sin empezar')" ondrop="kbDrop(event,'sin empezar')">
+      <div class="kb-col-head"><span class="kb-col-title">Sin empezar</span><span class="kb-cnt" id="kb-cnt-0">0</span></div>
+      <div id="kb-list-0"></div>
+    </div>
+    <div class="kb-col" id="kb-progress" ondragover="kbDragOver(event,'en progreso')" ondrop="kbDrop(event,'en progreso')">
+      <div class="kb-col-head"><span class="kb-col-title" style="color:var(--blue)">En progreso</span><span class="kb-cnt" id="kb-cnt-1">0</span></div>
+      <div id="kb-list-1"></div>
+    </div>
+    <div class="kb-col" id="kb-done" ondragover="kbDragOver(event,'listo')" ondrop="kbDrop(event,'listo')">
+      <div class="kb-col-head"><span class="kb-col-title" style="color:var(--green)">Listo</span><span class="kb-cnt" id="kb-cnt-2">0</span></div>
+      <div id="kb-list-2"></div>
+    </div>
+  </div>
+</div>
 
-  <!-- NUEVA -->
-  <div class="view" id="view-nueva">
-    <h1 style="margin-bottom:16px">Nueva tarea</h1>
-    <div class="card">
-      <div class="fg">
-        <div class="fr fr2">
-          <div class="field"><label>Cliente</label>
-            <select id="n-client" onchange="onNewChange()"><option value="">Selecciona cliente...</option></select>
-          </div>
-          <div class="field"><label>Nombre de la tarea</label>
-            <input type="text" id="n-name" placeholder="Ej: Estrategia contenidos orgánico" oninput="onNewChange()">
-          </div>
-        </div>
-        <div class="fr fr4">
-          <div class="field"><label>Prioridad</label>
-            <select id="n-prio">
-              <option value="1">🔴 Crítico</option>
-              <option value="2" selected>🟡 Importante</option>
-              <option value="3">🟢 Normal</option>
-            </select>
-          </div>
-          <div class="field"><label>Fecha para hacer</label><input type="date" id="n-date" onchange="onNewChange()"></div>
-          <div class="field"><label>Límite al cliente</label><input type="date" id="n-deadline"></div>
-          <div class="field"><label>Horas estimadas</label><input type="number" id="n-hours" min="0.5" max="12" step="0.5" value="1" onchange="onNewChange()"></div>
-        </div>
-        <div id="hint-box" class="hint-box"></div>
-        <div id="cap-warn" class="capacity-warn"></div>
-        <div class="field"><label>Notas</label><textarea id="n-notes" placeholder="Contexto, links, referencias..."></textarea></div>
-        <button class="btn-primary" onclick="addTask()">Crear tarea →</button>
+<!-- MEMORIA -->
+<div class="view" id="view-memoria">
+  <h1 style="margin-bottom:14px">Memoria de clientes</h1>
+  <div id="memory-client-sel" class="memory-client-grid"></div>
+  <div id="memory-detail" style="display:none">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="bsm" onclick="memoryClient=null;renderMemory()">← Volver</button>
+      <h2 id="memory-client-name" style="margin:0"></h2>
+      <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+        <button class="cal-nav-btn" onclick="memoryMonth--;if(memoryMonth<0){memoryMonth=11;memoryYear--}renderClientCalendar()">←</button>
+        <span id="memory-month-label" style="font-size:13px;font-family:var(--fh);font-weight:600;min-width:120px;text-align:center"></span>
+        <button class="cal-nav-btn" onclick="memoryMonth++;if(memoryMonth>11){memoryMonth=0;memoryYear++}renderClientCalendar()">→</button>
       </div>
     </div>
-  </div>
-
-  <!-- RECURRENTES -->
-  <div class="view" id="view-recurrentes">
-    <h1 style="margin-bottom:16px">Tareas recurrentes</h1>
-    <div class="card" style="margin-bottom:14px">
-      <h2>Ciclos del mes</h2>
-      <div id="rec-list"></div>
-    </div>
     <div class="card">
-      <h2>Añadir recurrente</h2>
-      <div class="fg">
-        <div class="fr fr2">
-          <div class="field"><label>Nombre</label><input type="text" id="r-name" placeholder="Nombre de la tarea recurrente"></div>
-          <div class="field"><label>Cliente (vacío = todos)</label><select id="r-client"><option value="">Todos los clientes</option></select></div>
+      <div id="memory-cal"></div>
+      <div id="memory-day-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- NUEVA TAREA -->
+<div class="view" id="view-nueva">
+  <h1 style="margin-bottom:14px">Nueva tarea</h1>
+  <div class="card" style="max-width:680px">
+    <div class="fg">
+      <div class="fr fr2">
+        <div class="field"><label>Cliente</label>
+          <select id="n-client" onchange="onNewChange()"><option value="">Selecciona cliente...</option></select>
         </div>
-        <div class="fr fr3">
-          <div class="field"><label>Del día</label><input type="number" id="r-from" min="1" max="28" value="1"></div>
-          <div class="field"><label>Al día</label><input type="number" id="r-to" min="1" max="31" value="10"></div>
-          <div class="field"><label>Horas est.</label><input type="number" id="r-hours" min="0.5" step="0.5" value="4"></div>
+        <div class="field"><label>Nombre de la tarea</label>
+          <input type="text" id="n-name" placeholder="Ej: Estrategia contenidos" oninput="onNewChange()">
         </div>
-        <button class="btn-primary" onclick="addRecurrent()" style="max-width:200px">Añadir recurrente</button>
       </div>
-    </div>
-  </div>
-
-  <!-- AGENCIA -->
-  <div class="view" id="view-agencia">
-    <h1 style="margin-bottom:6px">Cola de agencia</h1>
-    <p style="color:var(--text2);font-size:13px;margin-bottom:16px">Ideas de procesos y sistemas. Solo en bloques asignados (mié/jue/vie noche).</p>
-    <div class="card">
-      <div id="ag-list"></div>
-      <div style="display:flex;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-        <input type="text" id="ag-idea" placeholder="Nueva idea de proceso o sistema..." style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px;padding:7px 10px;font-family:var(--fb)">
-        <button class="btn-primary" onclick="addAgency()" style="max-width:100px">Añadir</button>
+      <div class="fr fr4">
+        <div class="field"><label>Prioridad</label>
+          <select id="n-prio"><option value="1">🔴 Crítico</option><option value="2" selected>🟡 Importante</option><option value="3">🟢 Normal</option></select>
+        </div>
+        <div class="field"><label>Fecha</label><input type="date" id="n-date" onchange="onNewChange()"></div>
+        <div class="field"><label>Límite cliente</label><input type="date" id="n-deadline"></div>
+        <div class="field"><label>Horas est.</label><input type="number" id="n-hours" min="0.5" max="12" step="0.5" value="1" onchange="onNewChange()"></div>
       </div>
+      <div id="hint-box" class="hint-box"></div>
+      <div id="day-preview" class="day-preview"></div>
+      <div class="field"><label>Notas</label><textarea id="n-notes" placeholder="Contexto, links, referencias..."></textarea></div>
+      <button class="btn-primary" onclick="addTask()">Crear tarea →</button>
     </div>
   </div>
+</div>
 
-  <!-- APRENDIZAJE -->
-  <div class="view" id="view-aprendizaje">
-    <h1 style="margin-bottom:6px">Tiempos aprendidos</h1>
-    <p style="color:var(--text2);font-size:13px;margin-bottom:14px">El sistema aprende con cada cronómetro. Más registros = estimaciones más precisas.</p>
-    <div class="filter-bar">
-      <select id="lrn-client" onchange="renderLearned()"><option value="">Todos los clientes</option></select>
-    </div>
-    <div class="card"><div id="lrn-list"></div></div>
+<!-- RECURRENTES -->
+<div class="view" id="view-recurrentes">
+  <h1 style="margin-bottom:14px">Tareas recurrentes</h1>
+  <div class="card" style="margin-bottom:12px">
+    <h2>Ciclos activos</h2>
+    <div id="rec-list"></div>
   </div>
-
-  <!-- AJUSTES -->
-  <div class="view" id="view-ajustes">
-    <h1 style="margin-bottom:6px">Horario de trabajo</h1>
-    <p style="color:var(--text2);font-size:13px;margin-bottom:20px">Define tus bloques de trabajo disponibles. El sistema descuenta reuniones automáticamente y te muestra el tiempo libre real cada día.</p>
-    <div class="card" style="margin-bottom:12px">
-      <h2>Resumen semanal</h2>
-      <div id="schedule-summary" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px"></div>
-    </div>
-    <div class="card">
-      <h2>Editar bloques por día</h2>
-      <div class="schedule-editor" id="schedule-editor"></div>
-      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center">
-        <button class="btn-primary" onclick="saveSchedule()" style="max-width:160px">Guardar horarios</button>
-        <button class="gcal-btn" onclick="resetSchedule()">Restaurar por defecto</button>
-        <span style="font-size:11px;color:var(--text3);margin-left:8px">Los cambios se aplican inmediatamente en toda la app</span>
+  <div class="card">
+    <h2>Añadir recurrente</h2>
+    <div class="fg">
+      <div class="fr fr2">
+        <div class="field"><label>Nombre</label><input type="text" id="r-name" placeholder="Nombre de la tarea"></div>
+        <div class="field"><label>Cliente (vacío = todos)</label><select id="r-client"><option value="">Todos los clientes</option></select></div>
       </div>
+      <div class="fr fr3">
+        <div class="field"><label>Del día</label><input type="number" id="r-from" min="1" max="28" value="5"></div>
+        <div class="field"><label>Al día</label><input type="number" id="r-to" min="1" max="31" value="15"></div>
+        <div class="field"><label>Horas est.</label><input type="number" id="r-hours" min="0.5" step="0.5" value="4"></div>
+      </div>
+      <button class="btn-primary" onclick="addRecurrent()" style="max-width:180px">Añadir recurrente</button>
     </div>
   </div>
+</div>
+
+<!-- AGENCIA -->
+<div class="view" id="view-agencia">
+  <h1 style="margin-bottom:6px">Cola de agencia</h1>
+  <p style="color:var(--text2);font-size:13px;margin-bottom:14px">Ideas de procesos y sistemas para trabajar en bloques nocturnos.</p>
+  <div class="card">
+    <div id="ag-list"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <input type="text" id="ag-idea" placeholder="Nueva idea..." style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px;padding:6px 10px;font-family:var(--fb)">
+      <button class="btn-primary" onclick="addAgency()" style="max-width:90px">Añadir</button>
+    </div>
+  </div>
+</div>
+
+<!-- TIEMPOS -->
+<div class="view" id="view-tiempos">
+  <h1 style="margin-bottom:6px">Tiempos aprendidos</h1>
+  <p style="color:var(--text2);font-size:13px;margin-bottom:12px">El sistema aprende con cada cronómetro.</p>
+  <div class="filter-bar"><select id="lrn-client" onchange="renderLearned()"><option value="">Todos los clientes</option></select></div>
+  <div class="card"><div id="lrn-list"></div></div>
+</div>
+
+<!-- AJUSTES -->
+<div class="view" id="view-ajustes">
+  <h1 style="margin-bottom:6px">Horario de trabajo</h1>
+  <p style="color:var(--text2);font-size:13px;margin-bottom:14px">Define tus bloques disponibles para clientes. Las horas nocturnas se gestionan por separado en la cola de agencia.</p>
+  <div class="card" style="margin-bottom:12px">
+    <h2>Resumen semanal</h2>
+    <div id="schedule-summary" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px"></div>
+  </div>
+  <div class="card">
+    <h2>Editar bloques</h2>
+    <div id="schedule-editor"></div>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:8px">
+      <button class="btn-primary" onclick="saveSchedule()" style="max-width:150px">Guardar</button>
+      <button class="gcal-btn" onclick="resetSchedule()">Restaurar por defecto</button>
+    </div>
+  </div>
+</div>
 
 </main>
 </div>
 
 <!-- TASK DETAIL MODAL -->
-<div class="modal-bg" id="modal-detail">
+<div class="modal-bg" id="modal-task">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-title" id="md-title">—</div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-title" id="mt-title">—</div>
+      <button class="modal-close" onclick="closeModal('modal-task')">✕</button>
     </div>
     <div class="modal-body">
-      <div id="md-content"></div>
+      <div id="mt-content"></div>
       <div class="modal-actions">
-        <button class="bsm bstart" id="md-timer-btn" onclick="modalTimerAction()">▶ Iniciar cronómetro</button>
-        <button class="bsm" onclick="closeModal()">Cerrar</button>
+        <button class="bsm bstart" id="mt-timer-btn">▶ Iniciar</button>
+        <button class="bsm" id="mt-stop-btn" style="display:none;color:var(--red);border-color:rgba(192,57,43,.3)" onclick="stopTimer();closeModal('modal-task')">■ Guardar sesión</button>
+        <button class="bsm" onclick="closeModal('modal-task')">Cerrar</button>
       </div>
     </div>
   </div>
 </div>
 
+<!-- MEETING NOTES MODAL -->
+<div class="modal-bg" id="modal-meeting">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="mm-title">—</div>
+      <button class="modal-close" onclick="closeModal('modal-meeting')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="mm-content"></div>
+    </div>
+  </div>
+</div>
+
 <script>
-// ─── CONSTANTS ──────────────────────────────────────────
+// ─── DATA ───────────────────────────────────────────────
 const CLIENTS=[
-  {id:'maria', name:'Maria Ortega',  color:'#4a7ec4'},
-  {id:'bruno', name:'Bruno Gomez',   color:'#5a9e6a'},
-  {id:'lucas', name:'Lucas Rodriguez',color:'#c47a4a'},
-  {id:'paul',  name:'Paul Lázaro',   color:'#c46aa0'},
-  {id:'quique',name:'Quique Brisach',color:'#8a6ac4'},
-  {id:'zero',  name:'Zerochats',     color:'#d4b896'},
-  {id:'pablo', name:'Pablo Cristobal',color:'#c4aa4a'}
+  {id:'maria',name:'Maria Ortega',color:'#2563a8'},
+  {id:'bruno',name:'Bruno Gomez',color:'#2e7d4f'},
+  {id:'lucas',name:'Lucas Rodriguez',color:'#c07830'},
+  {id:'paul',name:'Paul Lázaro',color:'#c0392b'},
+  {id:'quique',name:'Quique Brisach',color:'#6b4ab5'},
+  {id:'zero',name:'Zerochats',color:'#8a6a4a'},
+  {id:'pablo',name:'Pablo Cristobal',color:'#c06830'}
 ];
 
-const SCHEDULE={
+// Schedule WITHOUT night blocks — nights are for personal agency work
+const DEFAULT_SCHEDULE={
   1:[{s:'11:00',e:'12:00'},{s:'18:00',e:'19:00'}],
   2:[{s:'10:00',e:'11:00'},{s:'12:00',e:'13:00'},{s:'18:00',e:'19:00'}],
-  3:[{s:'11:00',e:'13:00'},{s:'16:00',e:'19:00'},{s:'22:00',e:'00:00'}],
-  4:[{s:'11:00',e:'13:00'},{s:'16:00',e:'19:00'},{s:'22:00',e:'00:00'}],
-  5:[{s:'11:00',e:'13:00'},{s:'16:00',e:'19:00'},{s:'22:00',e:'00:00'}],
-  6:[{s:'11:00',e:'13:00'},{s:'16:00',e:'19:00'}],
-  0:[{s:'10:00',e:'13:00'},{s:'16:00',e:'19:00'},{s:'22:00',e:'00:00'}]
+  3:[{s:'11:00',e:'13:00'},{s:'16:00',e:'19:00'}],
+  4:[{s:'11:00',e:'13:00'},{s:'16:00',e:'19:00'}],
+  5:[{s:'11:00',e:'13:00'},{s:'16:00',e:'19:00'}],
+  6:[],0:[]
 };
+
 const DN=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 const DNS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 const MN=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -483,21 +524,21 @@ function dayH(dow){return(SCHEDULE[dow]||[]).reduce((a,s)=>a+slotH(s),0)}
 const LS=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}};
 const SS=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
 
-let tasks   = LS('dg3_tasks',[]);
-let recs    = LS('dg3_recs',[]);
-let agency  = LS('dg3_agency',[]);
-let learned = LS('dg3_learned',{});
+let tasks=LS('dg4_tasks',[]);
+let recs=LS('dg4_recs',[]);
+let agency=LS('dg4_agency',[]);
+let learned=LS('dg4_learned',{});
+let meetingNotes=LS('dg4_meeting_notes',{});// key: eventId or "date::title", val: {notes, pending:[]}
+
+let editableSchedule=LS('dg4_schedule',JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)));
+let SCHEDULE=JSON.parse(JSON.stringify(editableSchedule));
 
 if(!recs.length){
-  recs=[
-    {id:'r1',name:'Estrategia de contenidos orgánico',fromDay:1,toDay:10,hours:2,client:''},
-    {id:'r2',name:'Preparar anuncios de publicidad',fromDay:10,toDay:20,hours:4,client:''},
-    {id:'r3',name:'Feedback 3 conv. setting + 3 llamadas venta no convertidas',fromDay:20,toDay:30,hours:2,client:''}
-  ];
-  SS('dg3_recs',recs);
+  recs=[{id:'r1',name:'Preparar anuncios de publicidad',fromDay:5,toDay:15,hours:4,client:''}];
+  SS('dg4_recs',recs);
 }
 
-function save(){SS('dg3_tasks',tasks);SS('dg3_recs',recs);SS('dg3_agency',agency);SS('dg3_learned',learned)}
+function save(){SS('dg4_tasks',tasks);SS('dg4_recs',recs);SS('dg4_agency',agency);SS('dg4_learned',learned);SS('dg4_meeting_notes',meetingNotes)}
 
 // ─── HELPERS ────────────────────────────────────────────
 const pad=n=>String(n).padStart(2,'0');
@@ -505,77 +546,58 @@ const todayStr=()=>new Date().toISOString().slice(0,10);
 const clientById=id=>CLIENTS.find(c=>c.id===id)||{name:id,color:'#888'};
 const norm=s=>s.toLowerCase().replace(/[^a-záéíóúñ0-9 ]/g,'').trim().slice(0,50);
 
-function dateStr(d){
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-}
-function dowOf(str){
-  const[y,m,d]=str.split('-').map(Number);
-  return new Date(y,m-1,d).getDay();
-}
+function dateStr(d){return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function dowOf(str){const[y,m,d]=str.split('-').map(Number);return new Date(y,m-1,d).getDay()}
 function dayHOfStr(str){return dayH(dowOf(str))}
-function assignedH(dateS){
-  return tasks.filter(t=>t.date===dateS).reduce((a,t)=>a+(+t.hours||0),0);
-}
-function isFull(dateS){
-  const free=dayHOfStr(dateS);
-  return free>0&&assignedH(dateS)>=free;
-}
+function assignedH(dateS){return tasks.filter(t=>t.date===dateS).reduce((a,t)=>a+(+t.hours||0),0)}
+function isWeekend(dateS){const dow=dowOf(dateS);return dow===0||dow===6}
 
 // ─── TIMER ──────────────────────────────────────────────
 let timerInterval=null,timerStart=null,timerTaskId=null,timerAccum=0;
 
 function startTimer(id){
-  if(timerInterval){alert('Ya hay un cronómetro activo.');return}
+  if(timerInterval&&timerTaskId!==id){alert('Ya hay un cronómetro activo.');return}
   const t=tasks.find(x=>x.id===id);if(!t)return;
-  // If resuming same task, keep accumulated time
-  if(timerTaskId!==id){timerAccum=0}
+  if(timerTaskId!==id)timerAccum=0;
   timerTaskId=id;timerStart=Date.now();
   t.status='en progreso';save();
   document.getElementById('timer-pill').classList.add('active');
   document.getElementById('t-name').textContent=t.name+' · '+clientById(t.client).name;
-  // Update btn to show pause
   timerInterval=setInterval(()=>{
     const e=timerAccum+(Date.now()-timerStart);
     const h=Math.floor(e/3600000),m=Math.floor((e%3600000)/60000),s=Math.floor((e%60000)/1000);
     document.getElementById('t-disp').textContent=`${pad(h)}:${pad(m)}:${pad(s)}`;
   },1000);
-  updateTimerBtns();
-  refreshAll();
+  document.getElementById('tbtn-main').textContent='❙❙ Pausar';
+  document.getElementById('tbtn-main').onclick=pauseTimer;
+  refreshModalTimerBtn();refreshAll();
 }
 
 function pauseTimer(){
   if(!timerInterval)return;
   clearInterval(timerInterval);timerInterval=null;
-  timerAccum+=Date.now()-timerStart;
-  timerStart=null;
-  // Keep pill active but show paused state
-  document.getElementById('t-disp').style.opacity='0.5';
-  updateTimerBtns();
-  refreshAll();
+  timerAccum+=Date.now()-timerStart;timerStart=null;
+  document.getElementById('t-disp').style.opacity='.5';
+  document.getElementById('tbtn-main').textContent='▶ Reanudar';
+  document.getElementById('tbtn-main').onclick=()=>startTimer(timerTaskId);
+  refreshModalTimerBtn();
 }
 
 function stopTimer(){
   if(!timerTaskId)return;
   if(timerInterval){clearInterval(timerInterval);timerInterval=null}
-  const totalMs=timerAccum+(timerStart?Date.now()-timerStart:0);
-  const hours=totalMs/3600000;
+  const total=timerAccum+(timerStart?Date.now()-timerStart:0);
+  const hours=total/3600000;
   const t=tasks.find(x=>x.id===timerTaskId);
   if(t&&hours>0.001){
     if(!t.timeLogs)t.timeLogs=[];
     t.timeLogs.push({date:todayStr(),hours:+hours.toFixed(3)});
-    learnTime(t.client,t.name,hours);
-    save();
+    learnTime(t.client,t.name,hours);save();
   }
-  const prev=timerTaskId;
   timerTaskId=null;timerStart=null;timerAccum=0;
   document.getElementById('timer-pill').classList.remove('active');
   document.getElementById('t-disp').textContent='00:00:00';
   document.getElementById('t-disp').style.opacity='1';
-  if(document.getElementById('modal-detail').classList.contains('open')){
-    const cur=document.getElementById('md-title').dataset.id;
-    if(cur===prev)openModal(prev);
-  }
-  updateTimerBtns();
   refreshAll();
 }
 
@@ -585,426 +607,582 @@ function cancelTimer(){
   document.getElementById('timer-pill').classList.remove('active');
   document.getElementById('t-disp').textContent='00:00:00';
   document.getElementById('t-disp').style.opacity='1';
-  updateTimerBtns();
   refreshAll();
-}
-
-function updateTimerBtns(){
-  // Update topbar pill buttons
-  const pill=document.getElementById('timer-pill');
-  const isPaused=timerTaskId&&!timerInterval;
-  const isRunning=timerTaskId&&timerInterval;
-  // Rebuild pill buttons dynamically
-  const stopBtn=pill.querySelector('.tbtn-stop');
-  if(stopBtn){
-    if(isRunning){stopBtn.textContent='❙❙ Pausar';stopBtn.onclick=pauseTimer}
-    else if(isPaused){stopBtn.textContent='▶ Reanudar';stopBtn.onclick=()=>startTimer(timerTaskId)}
-  }
-  updateModalTimerBtn();
 }
 
 function learnTime(client,name,hours){
   const k=client+'::'+norm(name);
   if(!learned[k])learned[k]={count:0,total:0};
-  learned[k].count++;learned[k].total+=hours;
-  save();
+  learned[k].count++;learned[k].total+=hours;save();
 }
 function getAvg(client,name){
   const k=client+'::'+norm(name);
-  if(learned[k]&&learned[k].count>0)return learned[k].total/learned[k].count;
-  return null;
+  return(learned[k]&&learned[k].count>0)?learned[k].total/learned[k].count:null;
 }
 
-// ─── MODAL ──────────────────────────────────────────────
-function openModal(id){
-  const t=tasks.find(x=>x.id===id);if(!t)return;
-  const c=clientById(t.client);
-  const avg=getAvg(t.client,t.name);
-  const totalLogged=t.timeLogs?t.timeLogs.reduce((a,l)=>a+l.hours,0):0;
-  const sc={'sin empezar':'s0','en progreso':'s1','listo':'s2'};
-  const sl={'sin empezar':'Sin empezar','en progreso':'En progreso','listo':'Listo'};
-  const pc={1:'Crítico',2:'Importante',3:'Normal'};
-  let logsHtml='<div class="empty" style="padding:12px">Sin registros de tiempo aún</div>';
-  if(t.timeLogs&&t.timeLogs.length){
-    logsHtml=t.timeLogs.map(l=>`<div class="log-entry">
-      <div class="log-date">${l.date}</div>
-      <div class="log-dur">${(l.hours).toFixed(2)}h · ${Math.round(l.hours*60)} min</div>
-    </div>`).join('');
-    logsHtml+=`<div class="log-total">Total registrado: <strong>${totalLogged.toFixed(2)}h</strong> · Estimado: ${t.hours}h${avg?` · Promedio histórico: ${avg.toFixed(1)}h`:''}</div>`;
-  }
-  document.getElementById('md-title').textContent=t.name;
-  document.getElementById('md-title').dataset.id=id;
-  document.getElementById('md-content').innerHTML=`
-    <div class="detail-row"><span class="detail-lbl">Cliente</span><span class="detail-val" style="display:flex;align-items:center;gap:6px"><span class="cdot" style="background:${c.color}"></span>${c.name}</span></div>
-    <div class="detail-row"><span class="detail-lbl">Estado</span><span class="detail-val"><span class="sbadge ${sc[t.status]||'s0'}">${sl[t.status]||t.status}</span></span></div>
-    <div class="detail-row"><span class="detail-lbl">Prioridad</span><span class="detail-val">${pc[t.priority]||'—'}</span></div>
-    <div class="detail-row"><span class="detail-lbl">Fecha asignada</span><span class="detail-val">${t.date||'—'}</span></div>
-    ${t.deadline?`<div class="detail-row"><span class="detail-lbl">Límite cliente</span><span class="detail-val" style="color:var(--amber)">${t.deadline}</span></div>`:''}
-    <div class="detail-row"><span class="detail-lbl">Horas estimadas</span><span class="detail-val">${t.hours}h${avg?` <span style="color:var(--green);font-size:11px">(hist. ${avg.toFixed(1)}h)</span>`:''}</span></div>
-    ${t.notes?`<div class="detail-row"><span class="detail-lbl">Notas</span><span class="detail-val" style="color:var(--text2)">${t.notes}</span></div>`:''}
-    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-      <h3 style="margin-bottom:8px">Registros de tiempo</h3>
-      ${logsHtml}
-    </div>
-  `;
-  updateModalTimerBtn();
-  document.getElementById('md-timer-btn').style.display='';
-  document.getElementById('modal-detail').classList.add('open');
-}
-
-function updateModalTimerBtn(){
-  const btn=document.getElementById('md-timer-btn');if(!btn)return;
-  const id=document.getElementById('md-title').dataset.id;
-  const isThisTask=timerTaskId===id;
-  const isPaused=isThisTask&&!timerInterval;
-  const isRunning=isThisTask&&timerInterval;
-  if(isRunning){
-    btn.textContent='❙❙ Pausar';
-    btn.onclick=pauseTimer;
-    btn.style.color='var(--amber)';btn.style.borderColor='rgba(212,145,58,.4)';
-  } else if(isPaused){
-    btn.textContent='▶ Reanudar';
-    btn.onclick=()=>startTimer(id);
-    btn.style.color='var(--accent)';btn.style.borderColor='rgba(212,184,150,.4)';
-  } else if(timerTaskId){
-    btn.textContent='Hay otro cronómetro activo';
-    btn.onclick=null;btn.style.color='var(--text3)';btn.style.borderColor='var(--border)';
+function refreshModalTimerBtn(){
+  const btn=document.getElementById('mt-timer-btn');
+  const stopBtn=document.getElementById('mt-stop-btn');
+  if(!btn)return;
+  const id=document.getElementById('mt-title').dataset.id;
+  if(!id)return;
+  if(timerTaskId===id&&timerInterval){
+    btn.textContent='❙❙ Pausar';btn.onclick=pauseTimer;
+    btn.style.color='var(--amber)';btn.style.borderColor='rgba(192,120,48,.4)';
+    if(stopBtn)stopBtn.style.display='';
+  } else if(timerTaskId===id&&!timerInterval){
+    btn.textContent='▶ Reanudar';btn.onclick=()=>startTimer(id);
+    btn.style.color='var(--accent)';btn.style.borderColor='rgba(138,106,74,.4)';
+    if(stopBtn)stopBtn.style.display='';
+  } else if(timerTaskId&&timerTaskId!==id){
+    btn.textContent='Otro cronómetro activo';btn.onclick=null;
+    btn.style.color='var(--text3)';btn.style.borderColor='var(--border)';
+    if(stopBtn)stopBtn.style.display='none';
   } else {
-    btn.textContent='▶ Iniciar cronómetro';
-    btn.onclick=()=>{const id2=document.getElementById('md-title').dataset.id;closeModal();startTimer(id2)};
-    btn.style.color='var(--accent)';btn.style.borderColor='rgba(212,184,150,.4)';
-  }
-  // Add stop button in modal if active
-  let stopEl=document.getElementById('md-stop-btn');
-  if(isThisTask&&!stopEl){
-    stopEl=document.createElement('button');
-    stopEl.id='md-stop-btn';stopEl.className='bsm';
-    stopEl.textContent='■ Guardar y cerrar sesión';
-    stopEl.style.color='var(--red)';stopEl.style.borderColor='rgba(224,90,74,.4)';
-    stopEl.onclick=()=>{stopTimer();closeModal()};
-    btn.parentNode.insertBefore(stopEl,btn.nextSibling);
-  } else if(!isThisTask&&stopEl){
-    stopEl.remove();
+    btn.textContent='▶ Iniciar cronómetro';btn.onclick=()=>{const i=document.getElementById('mt-title').dataset.id;closeModal('modal-task');startTimer(i)};
+    btn.style.color='var(--accent)';btn.style.borderColor='rgba(138,106,74,.4)';
+    if(stopBtn)stopBtn.style.display='none';
   }
 }
 
-function modalTimerAction(){}
-function closeModal(){document.getElementById('modal-detail').classList.remove('open')}
-document.getElementById('modal-detail').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal()});
-
-// ─── TASK HTML ───────────────────────────────────────────
-function taskHTML(t,showDate=false,draggable=false){
-  const c=clientById(t.client);
-  const avg=getAvg(t.client,t.name);
-  const isRun=timerTaskId===t.id;
-  const isDone=t.status==='listo';
-  const pc=['','p1','p2','p3'][t.priority]||'p3';
-  const sc={'sin empezar':'s0','en progreso':'s1','listo':'s2'};
-  const sl={'sin empezar':'Sin empezar','en progreso':'En progreso','listo':'Listo'};
-  const avgTxt=avg?`<span class="tag tag-lrn">≈${avg.toFixed(1)}h</span>`:'';
-  const dlTxt=t.deadline?`<span class="tag tag-dl">↗ ${t.deadline}</span>`:'';
-  const dateTxt=showDate&&t.date?`<span class="tag tag-h">📅 ${t.date}</span>`:'';
-
-  let acts='';
-  if(!isDone&&!isRun) acts+=`<button class="bsm bstart" onclick="startTimer('${t.id}')">▶</button>`;
-  if(isRun&&timerInterval) acts+=`<button class="bsm" style="color:var(--amber);border-color:rgba(212,145,58,.4)" onclick="pauseTimer()">❙❙</button>`;
-  if(isRun&&!timerInterval) acts+=`<button class="bsm bstart" onclick="startTimer('${t.id}')">▶</button>`;
-  if(isRun) acts+=`<button class="bsm" style="color:var(--red);border-color:rgba(224,90,74,.3);font-size:10px" onclick="stopTimer()">■ Fin</button>`;
-  acts+=`<select class="mini-sel" onchange="changeStatus('${t.id}',this.value)">
-    <option${t.status==='sin empezar'?' selected':''}>sin empezar</option>
-    <option${t.status==='en progreso'?' selected':''}>en progreso</option>
-    <option${t.status==='listo'?' selected':''}>listo</option>
-  </select>`;
-  acts+=`<input type="date" class="mini-date" value="${t.date||''}" onchange="changeDate('${t.id}',this.value)" title="Mover a otra fecha">`;
-  acts+=`<button class="bsm bdel" onclick="deleteTask('${t.id}')" style="border-color:transparent">✕</button>`;
-
-  const dragAttrs=draggable?`draggable="true" ondragstart="dragStart(event,'${t.id}')" ondragover="dragOver(event)" ondrop="dragDrop(event,'${t.id}')" ondragleave="dragLeave(event)"`:'';
-
-  return `<div class="task-row${isDone?' task-done':''}" id="tr-${t.id}" ${dragAttrs}>
-    <div class="pnum ${pc}">${t.priority}</div>
-    <div>
-      <div class="tname-el" onclick="openModal('${t.id}')">${t.name}</div>
-      <div class="tmeta">
-        <span class="tag tag-c"><span class="cdot" style="background:${c.color}"></span>${c.name}</span>
-        <span class="sbadge ${sc[t.status]||'s0'}">${sl[t.status]||t.status}</span>
-        <span class="tag tag-h">${t.hours}h</span>
-        ${avgTxt}${dlTxt}${dateTxt}
-      </div>
-    </div>
-    <div class="tacts">${acts}</div>
-  </div>`;
-}
-
-// ─── DRAG & DROP ─────────────────────────────────────────
-let dragId=null;
-function dragStart(e,id){dragId=id;e.currentTarget.classList.add('dragging')}
-function dragOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over')}
-function dragLeave(e){e.currentTarget.classList.remove('drag-over')}
-function dragDrop(e,targetId){
-  e.preventDefault();
-  e.currentTarget.classList.remove('drag-over');
-  document.querySelectorAll('.task-row').forEach(r=>r.classList.remove('dragging'));
-  if(!dragId||dragId===targetId)return;
-  const src=tasks.find(t=>t.id===dragId);
-  const tgt=tasks.find(t=>t.id===targetId);
-  if(!src||!tgt)return;
-  // Swap dates
-  const tmp=src.date;src.date=tgt.date;tgt.date=tmp;
-  dragId=null;save();refreshAll();
-  renderWeekDay(selectedWeekDay);
-}
-
-// ─── WEEK ────────────────────────────────────────────────
-let weekOffset=0;
-let selectedWeekDay=null;
+// ─── CALENDAR ───────────────────────────────────────────
+let calMode='week';// 'week' or 'day'
+let calOffset=0;// weeks offset for week mode, days for day mode
+let selectedDay=null;
+let calEventsByDay={};
+let calEvents=[];
 
 function getWeekDates(offset=0){
   const today=new Date();
   const dow=today.getDay();
   const mon=new Date(today);
   mon.setDate(today.getDate()-(dow===0?6:dow-1)+offset*7);
-  return Array.from({length:7},(_,i)=>{
+  // Only Mon-Fri
+  return Array.from({length:5},(_,i)=>{
     const d=new Date(mon);d.setDate(mon.getDate()+i);
     return dateStr(d);
   });
 }
 
-function renderWeek(){
-  const dates=getWeekDates(weekOffset);
+function setCalMode(mode){
+  calMode=mode;
+  document.getElementById('btn-mode-week').className='cal-nav-btn'+(mode==='week'?' active-mode':'');
+  document.getElementById('btn-mode-day').className='cal-nav-btn'+(mode==='day'?' active-mode':'');
+  renderCalendar();
+}
+
+function calNav(dir){calOffset+=dir;renderCalendar();if(gcalToken)fetchCalendarEvents()}
+function calGoToday(){calOffset=0;selectedDay=todayStr();renderCalendar();renderDayDetail(selectedDay)}
+
+function renderCalendar(){
   const tstr=todayStr();
-  const d0=new Date(dates[0]),d6=new Date(dates[6]);
-  document.getElementById('wk-label').textContent=`${d0.getDate()} ${MN[d0.getMonth()]} – ${d6.getDate()} ${MN[d6.getMonth()]} ${d6.getFullYear()}`;
-
-  const grid=document.getElementById('week-grid');
-  grid.innerHTML=dates.map((d,i)=>{
-    const dow=[1,2,3,4,5,6,0][i];
-    const dt=tasks.filter(t=>t.date===d);
-    const freeH=dayH(dow);
-    const estH=dt.reduce((a,t)=>a+(+t.hours||0),0);
-    const pct=freeH>0?Math.min(120,Math.round(estH/freeH*100)):0;
-    const full=freeH>0&&estH>=freeH;
-    const isToday=d===tstr;
-    const isSel=d===selectedWeekDay;
-
-    // Calendar events for this day from calEventsByDay
-    const dayEvents=calEventsByDay[d]||[];
-    const meetH=dayEvents.reduce((a,e)=>{
-      if(!e.start.dateTime||!e.end||!e.end.dateTime)return a;
-      return a+(new Date(e.end.dateTime)-new Date(e.start.dateTime))/3600000;
-    },0);
-
-    const taskMinis=dt.slice(0,2).map(t=>`<div class="wd-mini" style="border-left-color:${clientById(t.client).color}">${t.name}</div>`).join('');
-    const calMinis=dayEvents.slice(0,2).map(e=>{
-      const start=e.start.dateTime?new Date(e.start.dateTime):null;
-      const timeTxt=start?`${pad(start.getHours())}:${pad(start.getMinutes())} `:'';
-      return `<div class="wd-mini" style="border-left-color:var(--blue);color:var(--blue)">${timeTxt}${e.summary||'Reunión'}</div>`;
+  const calWeek=document.getElementById('cal-week-cols');
+  if(calMode==='week'){
+    const dates=getWeekDates(calOffset);
+    const d0=new Date(dates[0]),d4=new Date(dates[4]);
+    document.getElementById('cal-title').textContent=`${d0.getDate()} ${MN[d0.getMonth()]} – ${d4.getDate()} ${MN[d4.getMonth()]} ${d4.getFullYear()}`;
+    calWeek.style.display='grid';
+    calWeek.innerHTML=dates.map(d=>{
+      const dow=dowOf(d);
+      const dt=tasks.filter(t=>t.date===d&&t.status!=='listo');
+      const freeH=dayH(dow);
+      const estH=dt.reduce((a,t)=>a+(+t.hours||0),0);
+      const dayEvs=calEventsByDay[d]||[];
+      const meetH=dayEvs.reduce((a,e)=>{
+        if(!e.start.dateTime||!e.end?.dateTime)return a;
+        return a+(new Date(e.end.dateTime)-new Date(e.start.dateTime))/3600000;
+      },0);
+      const usedH=estH+meetH;
+      const pct=freeH>0?Math.min(100,Math.round(usedH/freeH*100)):0;
+      const isFull=freeH>0&&usedH>=freeH;
+      const isToday=d===tstr;
+      const isSel=d===selectedDay;
+      const dayNum=new Date(d+'T12:00:00').getDate();
+      const calMinis=dayEvs.slice(0,2).map(e=>{
+        const st=e.start.dateTime?new Date(e.start.dateTime):null;
+        return `<div class="wc-event cal-ev">${st?`${pad(st.getHours())}:${pad(st.getMinutes())} `:''  }${e.summary||'Reunión'}</div>`;
+      }).join('');
+      const taskMinis=dt.slice(0,Math.max(0,3-dayEvs.length)).map(t=>`<div class="wc-event task-ev" style="border-left-color:${clientById(t.client).color}">${t.name}</div>`).join('');
+      const more=(dt.length+dayEvs.length)>3?`<div class="wc-more">+${dt.length+dayEvs.length-3} más</div>`:'';
+      return `<div class="week-col${isToday?' today-col':''}${isFull?' full-col':''}${isSel?' selected-col':''}" onclick="selectDay('${d}')">
+        <div class="wc-head">
+          <div class="wc-day">${DNS[dow]}</div>
+          <div class="wc-num">${dayNum}</div>
+          <div class="wc-free">${freeH>0?`${(freeH-usedH).toFixed(1)}h libres${meetH>0?` · ${meetH.toFixed(1)}h mtg`:''}`:'Sin bloques'}</div>
+          <div class="wc-bar"><div class="wc-bar-fill${pct>90?' over':pct>70?' warn':''}" style="width:${pct}%"></div></div>
+        </div>
+        <div class="wc-items">${calMinis}${taskMinis}${more}</div>
+      </div>`;
     }).join('');
-    const more=(dt.length+dayEvents.length)>4?`<div class="wd-more">+${dt.length+dayEvents.length-4} más</div>`:'';
-
-    const freeReal=freeH-meetH;
-    const freeLabel=freeH>0?(meetH>0?`${freeReal.toFixed(1)}h libres`:`${freeH.toFixed(1)}h · ${pct}%`):'Sin bloques';
-
-    return `<div class="wday${isToday?' today-col':''}${full?' full-day':''}${isSel?' selected':''}" onclick="selectWeekDay('${d}')">
-      <div class="wd-name">${DNS[dow]}</div>
-      <div class="wd-num">${new Date(d+'T12:00:00').getDate()}</div>
-      <div class="wd-free">${freeLabel}${meetH>0?` · <span style="color:var(--blue)">${meetH.toFixed(1)}h mtg</span>`:''}</div>
-      <div class="wd-tasks">${calMinis}${taskMinis}${more}</div>
-    </div>`;
-  }).join('');
+  } else {
+    // Day mode
+    const today=new Date();
+    today.setDate(today.getDate()+calOffset);
+    const ds=dateStr(today);
+    const dow=today.getDay();
+    document.getElementById('cal-title').textContent=`${DN[dow]} ${today.getDate()} de ${MN[today.getMonth()]} ${today.getFullYear()}`;
+    calWeek.style.display='none';
+    selectedDay=ds;
+  }
+  if(selectedDay)renderDayDetail(selectedDay);
 }
 
-function selectWeekDay(dateS){
-  selectedWeekDay=dateS;
-  renderWeek();
-  renderWeekDay(dateS);
+function selectDay(d){
+  selectedDay=d;
+  renderCalendar();
+  renderDayDetail(d);
 }
 
-function renderWeekDay(dateS){
-  if(!dateS){document.getElementById('week-day-list').innerHTML='<div class="empty"><div class="ei">▦</div>Haz clic en un día</div>';return}
+function renderDayDetail(dateS){
+  const detail=document.getElementById('cal-day-detail');
+  if(!dateS){detail.style.display='none';return}
+  detail.style.display='block';
   const[y,m,d]=dateS.split('-').map(Number);
   const dow=new Date(y,m-1,d).getDay();
   const freeH=dayH(dow);
-  const dt=tasks.filter(t=>t.date===dateS);
+  const slots=SCHEDULE[dow]||[];
+  const dt=tasks.filter(t=>t.date===dateS&&t.status!=='listo').sort((a,b)=>a.priority-b.priority);
+  const dayEvs=calEventsByDay[dateS]||[];
+  const meetH=dayEvs.reduce((a,e)=>{
+    if(!e.start.dateTime||!e.end?.dateTime)return a;
+    return a+(new Date(e.end.dateTime)-new Date(e.start.dateTime))/3600000;
+  },0);
   const estH=dt.reduce((a,t)=>a+(+t.hours||0),0);
-  const slots=(SCHEDULE[dow]||[]).map(s=>`${s.s}–${s.e}`).join(' · ');
-  const full=freeH>0&&estH>=freeH;
+  const netFree=freeH-meetH-estH;
 
-  document.getElementById('week-day-label').textContent=`${DN[dow]} ${d} de ${MN[m-1]}`;
-  document.getElementById('week-day-cap').textContent=freeH>0?`${estH.toFixed(1)}h/${freeH.toFixed(1)}h${full?' — LLENO':''}`:slots||'Sin bloques';
+  const slotPills=slots.map(s=>`<span class="slot-pill">${s.s}–${s.e}</span>`).join('');
+  const freeCls=netFree<0?'over':netFree<1?'warn':'';
 
-  // Calendar events for this day
-  const isToday=dateS===todayStr();
-  const dayCalEvents=calEventsByDay[dateS]||[];
-  let calHtml='';
-  if(gcalToken&&dayCalEvents.length){
-    calHtml=`<div style="padding:10px 0;border-bottom:1px solid var(--border)">
-      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:var(--fh);text-transform:uppercase;letter-spacing:.06em">Reuniones del día</div>
-      ${dayCalEvents.map(e=>{
-        const start=e.start.dateTime?new Date(e.start.dateTime):null;
-        const end=e.end&&e.end.dateTime?new Date(e.end.dateTime):null;
-        const timeTxt=start?`${pad(start.getHours())}:${pad(start.getMinutes())}${end?`–${pad(end.getHours())}:${pad(end.getMinutes())}`:''}`:'Todo el día';
-        const dur=start&&end?(end-start)/3600000:0;
-        return `<div class="cal-event">
-          <span class="cal-event-dot"></span>
-          <span class="cal-event-time">${timeTxt}</span>
-          <span class="cal-event-name">${e.summary||'Sin título'}${dur>0?` <span style="color:var(--text3)">(${dur.toFixed(1)}h)</span>`:''}</span>
+  // Meeting notes
+  const evHtml=dayEvs.length?`
+    <div style="margin-bottom:10px">
+      <h3>Reuniones — haz clic para apuntar pendientes</h3>
+      ${dayEvs.map(e=>{
+        const st=e.start.dateTime?new Date(e.start.dateTime):null;
+        const en=e.end?.dateTime?new Date(e.end.dateTime):null;
+        const timeTxt=st?`${pad(st.getHours())}:${pad(st.getMinutes())}${en?`–${pad(en.getHours())}:${pad(en.getMinutes())}`:''}`:'';
+        const dur=st&&en?(en-st)/3600000:0;
+        const key=dateS+'::'+e.summary;
+        const notes=meetingNotes[key];
+        const hasPending=notes&&notes.pending&&notes.pending.some(p=>!p.done);
+        return `<div class="cal-event-row" onclick="openMeetingNotes('${encodeURIComponent(key)}','${encodeURIComponent(e.summary||'Reunión')}')">
+          <span class="cal-ev-dot"></span>
+          <span class="cal-ev-time">${timeTxt}${dur>0?` (${dur.toFixed(1)}h)`:''}</span>
+          <span class="cal-ev-name">${e.summary||'Sin título'}</span>
+          ${hasPending?`<span class="cal-ev-note-badge">● pendientes</span>`:''}
+          ${notes?.notes?`<span class="cal-ev-note-badge">notas</span>`:''}
+        </div>`;
+      }).join('')}
+    </div>`:'';
+
+  const tasksHtml=dt.length?dt.map(t=>taskRowHTML(t)).join(''):`<div class="empty"><div class="ei">◌</div>Sin tareas este día</div>`;
+
+  detail.innerHTML=`
+    <div class="day-detail-head">
+      <div>
+        <strong style="font-family:var(--fh)">${DN[dow]} ${d} de ${MN[m-1]}</strong>
+        <div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap">${slotPills||'<span style="font-size:12px;color:var(--text3)">Sin bloques definidos</span>'}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="free-badge ${freeCls}">${freeH>0?`${netFree.toFixed(1)}h libres`:'—'}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${meetH>0?`${meetH.toFixed(1)}h en reuniones · `:''  }${estH.toFixed(1)}h en tareas</div>
+      </div>
+    </div>
+    ${evHtml}
+    <h3 style="margin-bottom:8px">Tareas del día</h3>
+    ${tasksHtml}
+    <div style="margin-top:10px">
+      <button class="bsm" onclick="showView('nueva');document.getElementById('n-date').value='${dateS}';onNewChange()" style="font-size:11px">+ Añadir tarea a este día</button>
+    </div>
+  `;
+}
+
+// ─── TASK ROW HTML ───────────────────────────────────────
+function taskRowHTML(t){
+  const c=clientById(t.client);
+  const avg=getAvg(t.client,t.name);
+  const isRun=timerTaskId===t.id;
+  const pc=['','p1','p2','p3'][t.priority]||'p3';
+  const sc={'sin empezar':'s0','en progreso':'s1','listo':'s2'};
+  const sl={'sin empezar':'Sin empezar','en progreso':'En progreso','listo':'Listo'};
+  let acts='';
+  if(t.status!=='listo'&&!isRun) acts+=`<button class="bsm bstart" onclick="startTimer('${t.id}')">▶</button>`;
+  if(isRun&&timerInterval) acts+=`<button class="bsm" style="color:var(--amber);border-color:rgba(192,120,48,.4)" onclick="pauseTimer()">❙❙</button>`;
+  if(isRun&&!timerInterval) acts+=`<button class="bsm bstart" onclick="startTimer('${t.id}')">▶</button>`;
+  if(isRun) acts+=`<button class="bsm" style="color:var(--red);border-color:rgba(192,57,43,.3);font-size:10px" onclick="stopTimer()">■</button>`;
+  acts+=`<select class="mini-sel" onchange="changeStatus('${t.id}',this.value)">
+    <option${t.status==='sin empezar'?' selected':''}>sin empezar</option>
+    <option${t.status==='en progreso'?' selected':''}>en progreso</option>
+    <option${t.status==='listo'?' selected':''}>listo</option>
+  </select>`;
+  acts+=`<button class="bsm bdel" style="border-color:transparent" onclick="deleteTask('${t.id}')">✕</button>`;
+  return `<div class="task-row${t.status==='listo'?' task-done':''}" id="tr-${t.id}">
+    <div class="pnum ${pc}">${t.priority}</div>
+    <div>
+      <div class="tname-el" onclick="openTaskModal('${t.id}')">${t.name}</div>
+      <div class="tmeta">
+        <span class="tag tag-c"><span class="cdot" style="background:${c.color}"></span>${c.name}</span>
+        <span class="sbadge ${sc[t.status]||'s0'}">${sl[t.status]||t.status}</span>
+        <span class="tag tag-h">${t.hours}h${avg?` · hist.${avg.toFixed(1)}h`:''}</span>
+        ${t.deadline?`<span class="tag tag-dl">↗ ${t.deadline}</span>`:''}
+      </div>
+    </div>
+    <div class="tacts">${acts}</div>
+  </div>`;
+}
+
+// ─── KANBAN ─────────────────────────────────────────────
+let kbDragId=null;
+
+function renderKanban(){
+  const fc=document.getElementById('kb-client').value;
+  const fp=document.getElementById('kb-prio').value;
+  let list=[...tasks];
+  if(fc)list=list.filter(t=>t.client===fc);
+  if(fp)list=list.filter(t=>String(t.priority)===fp);
+
+  const cols=['sin empezar','en progreso','listo'];
+  const listEls=[document.getElementById('kb-list-0'),document.getElementById('kb-list-1'),document.getElementById('kb-list-2')];
+  const cntEls=[document.getElementById('kb-cnt-0'),document.getElementById('kb-cnt-1'),document.getElementById('kb-cnt-2')];
+
+  cols.forEach((status,i)=>{
+    const col=list.filter(t=>t.status===status).sort((a,b)=>a.priority-b.priority);
+    cntEls[i].textContent=col.length;
+    listEls[i].innerHTML=col.map(t=>{
+      const c=clientById(t.client);
+      const pc=['','p1','p2','p3'][t.priority]||'p3';
+      return `<div class="kb-card" draggable="true" id="kbc-${t.id}"
+        ondragstart="kbDragStart(event,'${t.id}')"
+        onclick="openTaskModal('${t.id}')">
+        <div class="kb-card-name">${t.name}</div>
+        <div class="kb-card-meta">
+          <span class="tag tag-c" style="font-size:10px"><span class="cdot" style="background:${c.color}"></span>${c.name}</span>
+          <span class="pnum ${pc}" style="width:16px;height:16px;font-size:9px">${t.priority}</span>
+          <span class="tag tag-h" style="font-size:10px">${t.hours}h</span>
+          ${t.date?`<span class="tag tag-h" style="font-size:10px">📅 ${t.date}</span>`:''}
+        </div>
+      </div>`;
+    }).join('')||`<div style="font-size:12px;color:var(--text3);text-align:center;padding:20px 10px">Sin tareas</div>`;
+  });
+
+  // Update counts in nav
+  const total=tasks.filter(t=>t.status!=='listo').length;
+  const cnKb=document.getElementById('cn-kb');
+  cnKb.textContent=total;cnKb.style.display=total>0?'':'none';
+}
+
+function kbDragStart(e,id){kbDragId=id}
+function kbDragOver(e){e.preventDefault()}
+function kbDrop(e,newStatus){
+  e.preventDefault();
+  if(!kbDragId)return;
+  changeStatus(kbDragId,newStatus);
+  kbDragId=null;
+}
+
+// ─── TASK MODAL ─────────────────────────────────────────
+function openTaskModal(id){
+  const t=tasks.find(x=>x.id===id);if(!t)return;
+  const c=clientById(t.client);
+  const avg=getAvg(t.client,t.name);
+  const totalLogged=t.timeLogs?t.timeLogs.reduce((a,l)=>a+l.hours,0):0;
+  const pc={1:'Crítico',2:'Importante',3:'Normal'};
+  const logsHtml=t.timeLogs?.length?t.timeLogs.map(l=>`<div class="log-entry"><div class="log-date">${l.date}</div><div class="log-dur">${l.hours.toFixed(2)}h · ${Math.round(l.hours*60)} min</div></div>`).join('')+'<div class="log-total">Total: <strong>'+totalLogged.toFixed(2)+'h</strong></div>':'<div style="font-size:12px;color:var(--text3);padding:8px">Sin sesiones registradas</div>';
+  document.getElementById('mt-title').textContent=t.name;
+  document.getElementById('mt-title').dataset.id=id;
+  document.getElementById('mt-content').innerHTML=`
+    <div class="detail-row"><span class="detail-lbl">Cliente</span><span class="detail-val" style="display:flex;align-items:center;gap:6px"><span class="cdot" style="background:${c.color}"></span>${c.name}</span></div>
+    <div class="detail-row"><span class="detail-lbl">Prioridad</span><span class="detail-val">${pc[t.priority]||'—'}</span></div>
+    <div class="detail-row"><span class="detail-lbl">Fecha</span><span class="detail-val">${t.date||'—'}</span></div>
+    ${t.deadline?`<div class="detail-row"><span class="detail-lbl">Límite</span><span class="detail-val" style="color:var(--amber)">${t.deadline}</span></div>`:''}
+    <div class="detail-row"><span class="detail-lbl">Horas est.</span><span class="detail-val">${t.hours}h${avg?` <span style="color:var(--green);font-size:11px">(hist. ${avg.toFixed(1)}h)</span>`:''}</span></div>
+    ${t.notes?`<div class="detail-row"><span class="detail-lbl">Notas</span><span class="detail-val" style="color:var(--text2)">${t.notes}</span></div>`:''}
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <h3 style="margin-bottom:8px">Sesiones de trabajo</h3>${logsHtml}
+    </div>`;
+  refreshModalTimerBtn();
+  document.getElementById('modal-task').classList.add('open');
+}
+
+// ─── MEETING → TAREA AUTOMÁTICA ──────────────────────────
+function openMeetingNotes(encodedKey,encodedTitle){
+  const key=decodeURIComponent(encodedKey);
+  const title=decodeURIComponent(encodedTitle);
+  const dateS=key.split('::')[0];
+
+  // Find if task already linked to this meeting
+  const linked=tasks.filter(t=>t.meetingKey===key&&t.status!=='listo');
+
+  // Find matching client from title
+  const matchedClient=CLIENTS.find(c=>title.toLowerCase().includes(c.name.split(' ')[0].toLowerCase()));
+
+  document.getElementById('mm-title').textContent=title;
+  document.getElementById('mm-title').dataset.key=encodedKey;
+
+  // Build content
+  const linkedHtml=linked.length?`
+    <div style="margin-bottom:12px">
+      <h3 style="margin-bottom:6px">Tareas vinculadas a esta reunión</h3>
+      ${linked.map(t=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+        <span class="pnum p${t.priority}" style="flex-shrink:0">${t.priority}</span>
+        <span style="flex:1;font-size:13px;font-family:var(--fh)">${t.name}</span>
+        <span class="sbadge s${t.status==='sin empezar'?0:t.status==='en progreso'?1:2}">${t.status}</span>
+        <button class="bsm" onclick="openTaskModal('${t.id}')">Ver</button>
+      </div>`).join('')}
+    </div>`:'';
+
+  document.getElementById('mm-content').innerHTML=`
+    ${linkedHtml}
+    <div>
+      <h3 style="margin-bottom:8px">Crear tarea desde esta reunión</h3>
+      <div class="fg">
+        <div class="fr fr2">
+          <div class="field"><label>Cliente</label>
+            <select id="mt-client">${'<option value="">Selecciona...</option>'+CLIENTS.map(c=>`<option value="${c.id}"${matchedClient?.id===c.id?' selected':''}>${c.name}</option>`).join('')}</select>
+          </div>
+          <div class="field"><label>Tarea pendiente</label>
+            <input type="text" id="mt-task-name" placeholder="Ej: Preparar propuesta de contenidos">
+          </div>
+        </div>
+        <div class="fr fr3">
+          <div class="field"><label>Prioridad</label>
+            <select id="mt-prio"><option value="1">🔴 Crítico</option><option value="2" selected>🟡 Importante</option><option value="3">🟢 Normal</option></select>
+          </div>
+          <div class="field"><label>Fecha para hacer</label>
+            <input type="date" id="mt-date" value="${dateS}">
+          </div>
+          <div class="field"><label>Horas est.</label>
+            <input type="number" id="mt-hours" min="0.5" step="0.5" value="1">
+          </div>
+        </div>
+        <button class="btn-primary" onclick="createTaskFromMeeting('${encodeURIComponent(key)}')" style="max-width:220px">Crear tarea vinculada →</button>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="bsm" onclick="closeModal('modal-meeting')">Cerrar</button>
+    </div>`;
+  document.getElementById('modal-meeting').classList.add('open');
+}
+
+function createTaskFromMeeting(encodedKey){
+  const key=decodeURIComponent(encodedKey);
+  const client=document.getElementById('mt-client').value;
+  const name=document.getElementById('mt-task-name').value.trim();
+  if(!client||!name){alert('Selecciona cliente y nombre de tarea');return}
+  const t={
+    id:'t'+Date.now(),client,name,
+    priority:+document.getElementById('mt-prio').value,
+    date:document.getElementById('mt-date').value||todayStr(),
+    deadline:'',hours:+document.getElementById('mt-hours').value||1,
+    notes:`Generada desde reunión: ${key.split('::')[1]||''}`,
+    status:'sin empezar',timeLogs:[],createdAt:Date.now(),
+    meetingKey:key
+  };
+  tasks.push(t);save();
+  closeModal('modal-meeting');
+  refreshAll();
+  // Reopen meeting modal to show linked task
+  setTimeout(()=>{
+    const title=key.split('::').slice(1).join('::');
+    openMeetingNotes(encodedKey,encodeURIComponent(title));
+  },100);
+}
+
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal(e.currentTarget.id)}));
+
+// ─── STATUS / DELETE ─────────────────────────────────────
+function changeStatus(id,v){
+  const t=tasks.find(x=>x.id===id);if(!t)return;
+  t.status=v;save();refreshAll();
+}
+function deleteTask(id){if(!confirm('¿Eliminar esta tarea?'))return;tasks=tasks.filter(t=>t.id!==id);save();refreshAll()}
+
+// ─── MEMORY ─────────────────────────────────────────────
+let memoryMonth=new Date().getMonth();
+let memoryYear=new Date().getFullYear();
+let memoryClient=null;
+
+function renderMemory(){
+  const sel=document.getElementById('memory-client-sel');
+  const det=document.getElementById('memory-detail');
+
+  if(!memoryClient){
+    sel.style.display='grid';det.style.display='none';
+    const doneTasks=tasks.filter(t=>t.status==='listo');
+    const byClient={};
+    doneTasks.forEach(t=>{if(!byClient[t.client])byClient[t.client]=[];byClient[t.client].push(t)});
+    sel.innerHTML=CLIENTS.map(c=>{
+      const n=(byClient[c.id]||[]).length;
+      const totalH=(byClient[c.id]||[]).reduce((a,t)=>a+(t.timeLogs||[]).reduce((b,l)=>b+l.hours,0),0);
+      return `<div class="memory-client-card" onclick="openClientMemory('${c.id}')">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span class="cdot" style="background:${c.color};width:10px;height:10px"></span>
+          <span style="font-family:var(--fh);font-weight:600;font-size:13px">${c.name}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3)">${n} tarea${n!==1?'s':''} completada${n!==1?'s':''}</div>
+        ${totalH>0?`<div style="font-size:11px;color:var(--accent);font-weight:600;margin-top:2px">${totalH.toFixed(1)}h registradas</div>`:''}
+      </div>`;
+    }).join('');
+  } else {
+    sel.style.display='none';det.style.display='block';
+    renderClientCalendar();
+  }
+}
+
+function openClientMemory(cid){
+  memoryClient=cid;
+  memoryMonth=new Date().getMonth();
+  memoryYear=new Date().getFullYear();
+  renderMemory();
+}
+
+function renderClientCalendar(){
+  const c=clientById(memoryClient);
+  document.getElementById('memory-client-name').textContent=c.name;
+  document.getElementById('memory-client-name').style.color=c.color;
+  const lbl=document.getElementById('memory-month-label');
+  if(lbl)lbl.textContent=`${MN[memoryMonth]} ${memoryYear}`;
+
+  const doneTasks=tasks.filter(t=>t.status==='listo'&&t.client===memoryClient);
+  // Index by date
+  const byDate={};
+  doneTasks.forEach(t=>{if(t.date){if(!byDate[t.date])byDate[t.date]=[];byDate[t.date].push(t)}});
+
+  // Calendar grid for memoryMonth/memoryYear
+  const firstDay=new Date(memoryYear,memoryMonth,1);
+  const lastDay=new Date(memoryYear,memoryMonth+1,0);
+  const startDow=firstDay.getDay()===0?6:firstDay.getDay()-1;// Mon=0
+  const totalDays=lastDay.getDate();
+
+  const totalH=doneTasks.reduce((a,t)=>a+(t.timeLogs||[]).reduce((b,l)=>b+l.hours,0),0);
+  const monthTasks=doneTasks.filter(t=>t.date&&t.date.startsWith(`${memoryYear}-${pad(memoryMonth+1)}`));
+
+  const calEl=document.getElementById('memory-cal');
+  if(!calEl)return;
+
+  // Build grid
+  const cells=[];
+  for(let i=0;i<startDow;i++)cells.push(null);
+  for(let d=1;d<=totalDays;d++)cells.push(d);
+  while(cells.length%7!==0)cells.push(null);
+
+  calEl.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px">
+      ${['L','M','X','J','V','S','D'].map(d=>`<div style="text-align:center;font-size:10px;font-family:var(--fh);font-weight:600;color:var(--text3);padding:4px 0">${d}</div>`).join('')}
+      ${cells.map(d=>{
+        if(!d)return`<div></div>`;
+        const dateKey=`${memoryYear}-${pad(memoryMonth+1)}-${pad(d)}`;
+        const dayTasks=byDate[dateKey]||[];
+        const hasTask=dayTasks.length>0;
+        const dayH2=dayTasks.reduce((a,t)=>a+(t.timeLogs||[]).reduce((b,l)=>b+l.hours,0),0);
+        const isToday=dateKey===todayStr();
+        return `<div onclick="showMemoryDay('${dateKey}')" style="
+          min-height:52px;border-radius:6px;padding:4px;cursor:${hasTask?'pointer':'default'};
+          background:${hasTask?`rgba(${hexToRgb(c.color)},.1)`:isToday?'var(--bg3)':'var(--bg3)'};
+          border:1px solid ${hasTask?c.color:isToday?'var(--border2)':'var(--border)'};
+          transition:all .15s;
+          ${hasTask?'box-shadow:0 1px 4px rgba(0,0,0,.06)':''}
+        " ${hasTask?`title="${dayTasks.map(t=>t.name).join(', ')}"`:''}
+        onmouseover="${hasTask?`this.style.opacity='.8'`:''}" onmouseout="${hasTask?`this.style.opacity='1'`:''}">
+          <div style="font-size:11px;font-weight:600;font-family:var(--fh);color:${hasTask?c.color:isToday?'var(--accent)':'var(--text3)'}">${d}</div>
+          ${hasTask?`
+            <div style="font-size:9px;color:${c.color};margin-top:2px;font-weight:600">${dayTasks.length} tarea${dayTasks.length!==1?'s':''}</div>
+            ${dayH2>0?`<div style="font-size:9px;color:var(--text3)">${dayH2.toFixed(1)}h</div>`:''}
+          `:''}
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="margin-top:6px;font-size:11px;color:var(--text3)">
+      ${monthTasks.length} tarea${monthTasks.length!==1?'s':''} completadas este mes
+      ${totalH>0?` · ${totalH.toFixed(1)}h totales acumuladas`:''}
+    </div>
+  `;
+
+  // Day detail panel
+  const dayDet=document.getElementById('memory-day-detail');
+  if(dayDet)dayDet.innerHTML='';
+}
+
+function hexToRgb(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return`${r},${g},${b}`;
+}
+
+function showMemoryDay(dateS){
+  const doneTasks=tasks.filter(t=>t.status==='listo'&&t.client===memoryClient&&t.date===dateS);
+  if(!doneTasks.length)return;
+  const[y,m,d]=dateS.split('-').map(Number);
+  const det=document.getElementById('memory-day-detail');
+  if(!det)return;
+  det.innerHTML=`
+    <div style="margin-top:12px;padding:12px 16px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:600;font-family:var(--fh);margin-bottom:8px;color:var(--text2)">${DN[new Date(y,m-1,d).getDay()]} ${d} de ${MN[m-1]}</div>
+      ${doneTasks.map(t=>{
+        const totalH=(t.timeLogs||[]).reduce((a,l)=>a+l.hours,0);
+        return `<div style="padding:6px 0;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:flex-start">
+          <div style="flex:1">
+            <div style="font-size:13px;font-family:var(--fh);font-weight:500">${t.name}</div>
+            ${t.notes?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${t.notes}</div>`:''}
+          </div>
+          ${totalH>0?`<div style="font-size:12px;font-weight:600;color:var(--accent);flex-shrink:0">${totalH.toFixed(1)}h</div>`:''}
         </div>`;
       }).join('')}
     </div>`;
-  }
-
-  // Slots info
-  const slotsHtml=freeH>0?`<div style="padding:8px 0;border-bottom:1px solid var(--border);margin-bottom:2px">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:var(--fh);text-transform:uppercase;letter-spacing:.06em">Bloques de trabajo</div>
-    <div style="display:flex;gap:5px;flex-wrap:wrap">${(SCHEDULE[dow]||[]).map(s=>`<span class="slot-pill">${s.s}–${s.e}</span>`).join('')}</div>
-    <div style="font-size:11px;color:var(--text2);margin-top:4px">${freeH.toFixed(1)}h totales · ${(freeH-estH).toFixed(1)}h libres</div>
-  </div>`:'';
-
-  const sorted=[...dt].sort((a,b)=>a.priority-b.priority);
-  const tasksHtml=sorted.length
-    ?sorted.map(t=>taskHTML(t,false,true)).join('')
-    :`<div class="empty"><div class="ei">◌</div>Sin tareas este día<br><br><button class="bsm" onclick="showView('nueva');document.getElementById('n-date').value='${dateS}';onNewChange()">+ Añadir tarea</button></div>`;
-
-  document.getElementById('week-day-list').innerHTML=slotsHtml+calHtml+tasksHtml;
-}
-
-// ─── HOY ────────────────────────────────────────────────
-function renderToday(){
-  const today=new Date(),dow=today.getDay();
-  const tstr=todayStr();
-  document.getElementById('hoy-title').textContent=`${DN[dow]}, ${today.getDate()} de ${MN[today.getMonth()]}`;
-  const slots=SCHEDULE[dow]||[];
-  const freeH=dayH(dow);
-  document.getElementById('hoy-slots').innerHTML=slots.map(s=>`<span class="slot-pill">${s.s}–${s.e}</span>`).join('');
-  document.getElementById('hoy-free-desc').textContent=freeH>0?`${freeH.toFixed(1)}h disponibles en ${slots.length} bloque${slots.length!==1?'s':''}`:' Sin bloques definidos hoy';
-
-  const todayT=tasks.filter(t=>t.date===tstr);
-  const estH=todayT.reduce((a,t)=>a+(+t.hours||0),0);
-  const pct=freeH>0?Math.min(120,Math.round(estH/freeH*100)):0;
-  const bar=document.getElementById('hoy-bar');
-  bar.style.width=Math.min(100,pct)+'%';
-  bar.className='bar-fill'+(pct>100?' over':pct>75?' warn':'');
-  document.getElementById('hoy-pct').textContent=pct+'%';
-  document.getElementById('hoy-bar-detail').textContent=`${estH.toFixed(1)}h asignadas de ${freeH.toFixed(1)}h disponibles`;
-
-  document.getElementById('hoy-metrics').innerHTML=`
-    <div class="metric"><div class="ml">Tareas hoy</div><div class="mv">${todayT.length}</div><div class="ms">asignadas</div></div>
-    <div class="metric"><div class="ml">Completadas</div><div class="mv" style="color:var(--green)">${todayT.filter(t=>t.status==='listo').length}</div><div class="ms">listas</div></div>
-    <div class="metric"><div class="ml">En progreso</div><div class="mv" style="color:var(--blue)">${todayT.filter(t=>t.status==='en progreso').length}</div><div class="ms">activas</div></div>
-    <div class="metric"><div class="ml">Horas</div><div class="mv">${estH.toFixed(1)}h</div><div class="ms">de ${freeH.toFixed(1)}h libres</div></div>
-  `;
-
-  const sorted=[...todayT].sort((a,b)=>a.priority-b.priority);
-  document.getElementById('hoy-list').innerHTML=sorted.length
-    ?sorted.map(t=>taskHTML(t,false,true)).join('')
-    :`<div class="empty"><div class="ei">◌</div>Sin tareas hoy</div>`;
-
-  document.getElementById('cn-hoy').textContent=todayT.filter(t=>t.status!=='listo').length;
-}
-
-// ─── ALL ────────────────────────────────────────────────
-function renderAll(){
-  const fc=document.getElementById('f-client').value;
-  const fs=document.getElementById('f-status').value;
-  const fp=document.getElementById('f-prio').value;
-  const fd=document.getElementById('f-date').value;
-  let list=[...tasks];
-  if(fc)list=list.filter(t=>t.client===fc);
-  if(fs)list=list.filter(t=>t.status===fs);
-  if(fp)list=list.filter(t=>String(t.priority)===fp);
-  if(fd)list=list.filter(t=>t.date===fd);
-  list.sort((a,b)=>a.priority-b.priority||(a.date||'').localeCompare(b.date||''));
-  document.getElementById('all-list').innerHTML=list.length
-    ?list.map(t=>taskHTML(t,true,true)).join('')
-    :`<div class="empty"><div class="ei">◌</div>Sin tareas con ese filtro</div>`;
-  document.getElementById('cn-todas').textContent=tasks.filter(t=>t.status!=='listo').length;
 }
 
 // ─── NEW TASK ────────────────────────────────────────────
 function onNewChange(){
   const client=document.getElementById('n-client').value;
   const name=document.getElementById('n-name').value.trim();
-  const date=document.getElementById('n-date').value||todayStr();
+  const date=document.getElementById('n-date').value;
   const hours=+document.getElementById('n-hours').value||1;
-
-  // Learned hint
   const hb=document.getElementById('hint-box');
+  const dp=document.getElementById('day-preview');
+
   const avg=client&&name?getAvg(client,name):null;
-  if(avg){hb.className='hint-box on';hb.textContent=`Historial: esta tarea te toma ~${avg.toFixed(1)}h de media. Estimación ajustada.`;document.getElementById('n-hours').value=Math.round(avg*2)/2}
+  if(avg){hb.className='hint-box on';hb.textContent=`Historial: ~${avg.toFixed(1)}h de media. Estimación ajustada.`;document.getElementById('n-hours').value=Math.round(avg*2)/2}
   else hb.className='hint-box';
 
-  // Day preview + capacity warning
-  const cw=document.getElementById('cap-warn');
   if(date){
     const dow=dowOf(date);
     const slots=SCHEDULE[dow]||[];
     const freeH=dayHOfStr(date);
     const used=assignedH(date);
-    const remaining=freeH-used;
+    const rem=freeH-used;
     const slotsStr=slots.map(s=>`${s.s}–${s.e}`).join(' · ');
-    const dayName=DN[dow];
-
+    dp.style.display='';
     if(freeH===0){
-      cw.className='capacity-warn on';
-      cw.innerHTML=`<strong>${dayName} ${date}</strong> — Sin bloques de trabajo definidos este día.`;
-    } else if(remaining<=0){
-      cw.className='capacity-warn on';
-      cw.innerHTML=`<strong>${dayName} ${date}</strong> — Bloques: ${slotsStr} (${freeH.toFixed(1)}h) · <span style="color:var(--red)">DÍA LLENO: ${used.toFixed(1)}h asignadas</span>`;
-    } else if(remaining<hours){
-      cw.className='capacity-warn on';
-      cw.innerHTML=`<strong>${dayName} ${date}</strong> — Bloques: ${slotsStr} · Libre: ${remaining.toFixed(1)}h de ${freeH.toFixed(1)}h · <span style="color:var(--amber)">Esta tarea ocupa ${hours}h</span>`;
+      dp.className='day-preview on full';dp.innerHTML=`<strong>${DN[dow]} ${date}</strong> — Sin bloques de trabajo`;
+    } else if(rem<=0){
+      dp.className='day-preview on full';dp.innerHTML=`<strong>${DN[dow]}</strong> — ${slotsStr} · <strong>Día lleno (${freeH.toFixed(1)}h)</strong>`;
+    } else if(rem<hours){
+      dp.className='day-preview on warn';dp.innerHTML=`<strong>${DN[dow]}</strong> — ${slotsStr} · Solo <strong>${rem.toFixed(1)}h</strong> libres de ${freeH.toFixed(1)}h`;
     } else {
-      cw.className='capacity-warn on';
-      cw.style.background='rgba(90,158,106,.08)';
-      cw.style.borderColor='rgba(90,158,106,.25)';
-      cw.style.color='var(--green)';
-      cw.innerHTML=`<strong style="color:var(--text)">${dayName} ${date}</strong> — Bloques: ${slotsStr} · Libre: <strong>${remaining.toFixed(1)}h</strong> de ${freeH.toFixed(1)}h`;
+      dp.className='day-preview on ok';dp.innerHTML=`<strong>${DN[dow]}</strong> — ${slotsStr} · <strong>${rem.toFixed(1)}h libres</strong> de ${freeH.toFixed(1)}h`;
     }
-  } else {
-    cw.className='capacity-warn';
-    cw.style.background='';cw.style.borderColor='';cw.style.color='';
-  }
+  } else dp.className='day-preview';
 }
 
 function addTask(){
   const client=document.getElementById('n-client').value;
   const name=document.getElementById('n-name').value.trim();
-  if(!client||!name){alert('Selecciona cliente e introduce un nombre');return}
+  if(!client||!name){alert('Selecciona cliente y nombre');return}
   const date=document.getElementById('n-date').value||todayStr();
   const hours=+document.getElementById('n-hours').value||1;
   const freeH=dayHOfStr(date);
   const used=assignedH(date);
-  if(freeH>0&&used>=freeH){
-    if(!confirm(`El día ${date} ya está lleno (${freeH.toFixed(1)}h). ¿Quieres añadir la tarea igualmente?`))return;
-  }
-  tasks.push({
-    id:'t'+Date.now(),client,name,
-    priority:+document.getElementById('n-prio').value,
-    date,deadline:document.getElementById('n-deadline').value,
-    hours,notes:document.getElementById('n-notes').value.trim(),
-    status:'sin empezar',timeLogs:[],createdAt:Date.now()
-  });
+  if(freeH>0&&used>=freeH&&!confirm(`El día ${date} está lleno. ¿Añadir igualmente?`))return;
+  tasks.push({id:'t'+Date.now(),client,name,priority:+document.getElementById('n-prio').value,date,deadline:document.getElementById('n-deadline').value,hours,notes:document.getElementById('n-notes').value.trim(),status:'sin empezar',timeLogs:[],createdAt:Date.now()});
   save();
-  ['n-name','n-notes','n-deadline'].forEach(id=>document.getElementById(id).value='');
+  ['n-name','n-notes','n-deadline'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('n-hours').value='1';
   document.getElementById('hint-box').className='hint-box';
-  document.getElementById('cap-warn').className='capacity-warn';
-  showView('hoy');
+  document.getElementById('day-preview').className='day-preview';
+  showView('calendario');
 }
-
-// ─── STATUS/DATE/DELETE ──────────────────────────────────
-function changeStatus(id,v){const t=tasks.find(x=>x.id===id);if(t){t.status=v;save();refreshAll()}}
-function changeDate(id,v){
-  const t=tasks.find(x=>x.id===id);if(!t)return;
-  const freeH=v?dayHOfStr(v):0;
-  const used=v?assignedH(v):0;
-  const existing=t.date===v?+t.hours:0;
-  if(freeH>0&&(used-existing+t.hours)>freeH){
-    if(!confirm(`El día ${v} estará al límite de capacidad. ¿Mover igualmente?`))return;
-  }
-  t.date=v;save();refreshAll();renderWeekDay(selectedWeekDay);
-}
-function deleteTask(id){if(!confirm('¿Eliminar esta tarea?'))return;tasks=tasks.filter(t=>t.id!==id);save();refreshAll();renderWeekDay(selectedWeekDay)}
 
 // ─── RECURRENTS ──────────────────────────────────────────
 function renderRecurrents(){
@@ -1015,7 +1193,7 @@ function renderRecurrents(){
     return `<div class="rec-item">
       <span class="rec-period">días ${r.fromDay}–${r.toDay}</span>
       <div style="flex:1">
-        <div style="font-size:13px;font-weight:500;font-family:var(--fh);color:var(--text)">${r.name}</div>
+        <div style="font-size:13px;font-weight:500;font-family:var(--fh)">${r.name}</div>
         <div style="font-size:11px;color:var(--text3);margin-top:2px">${r.hours}h por cliente · ${c?`<span style="color:${c.color}">${c.name}</span>`:'Todos los clientes'}</div>
       </div>
       <span class="${active?'rec-active':'rec-inactive'}">${active?'Activa':'Fuera de período'}</span>
@@ -1026,9 +1204,8 @@ function renderRecurrents(){
 }
 
 function addRecurrent(){
-  const name=document.getElementById('r-name').value.trim();
-  if(!name)return;
-  recs.push({id:'r'+Date.now(),name,fromDay:+document.getElementById('r-from').value||1,toDay:+document.getElementById('r-to').value||10,hours:+document.getElementById('r-hours').value||4,client:document.getElementById('r-client').value});
+  const name=document.getElementById('r-name').value.trim();if(!name)return;
+  recs.push({id:'r'+Date.now(),name,fromDay:+document.getElementById('r-from').value||5,toDay:+document.getElementById('r-to').value||15,hours:+document.getElementById('r-hours').value||4,client:document.getElementById('r-client').value});
   save();document.getElementById('r-name').value='';renderRecurrents();
 }
 function deleteRec(id){recs=recs.filter(r=>r.id!==id);save();renderRecurrents()}
@@ -1041,147 +1218,141 @@ function createFromRec(id){
   const year=today.getFullYear();
   const month=today.getMonth();
 
-  // Build list of available working days in the period (from today or fromDay, whichever is later)
-  const startDay=Math.max(currentDay,r.fromDay);
+  // Build working days (Mon-Fri, no weekends) in period from today
   const workingDays=[];
-  for(let d=startDay;d<=r.toDay;d++){
+  for(let d=Math.max(currentDay,r.fromDay);d<=r.toDay;d++){
     const dd=new Date(year,month,d);
     const ds=dateStr(dd);
-    const freeH=dayH(dd.getDay());
-    if(freeH>0)workingDays.push(ds);
+    if(!isWeekend(ds)&&dayH(dd.getDay())>0)workingDays.push(ds);
   }
+  if(!workingDays.length){alert('No hay días laborables disponibles en el período.');return}
 
-  if(!workingDays.length){
-    alert('No hay días laborables disponibles en el período.');return;
-  }
-
-  // Rotating start: use a seed based on month+recurrent id so each month starts distinto
+  // Rotating start by month
   const seed=(month+parseInt(id.replace(/\D/g,'').slice(-2)||'0',10))%targets.length;
   const rotatedTargets=[...targets.slice(seed),...targets.slice(0,seed)];
 
-  // Assign 1 client per day, cycling through working days
   const created=[];
-  const dayTaskCount={};// track how many rec tasks per day to avoid stacking
+  const dayUsed={};// track hours added per day in this run
 
-  rotatedTargets.forEach((c,i)=>{
-    // Find a day that: has capacity AND doesn't already have a task from this recurrent
-    let assigned=null;
-    for(let di=i;di<workingDays.length+i;di++){
+  rotatedTargets.forEach((c,ci)=>{
+    let hoursLeft=r.hours;
+    // Find first day with capacity
+    for(let di=ci;di<workingDays.length+ci&&hoursLeft>0;di++){
       const ds=workingDays[di%workingDays.length];
-      const used=assignedH(ds)+created.filter(t=>t.date===ds).reduce((a,t)=>a+(+t.hours||0),0);
-      const freeH=dayHOfStr(ds);
-      const recTasksOnDay=(dayTaskCount[ds]||0);
-      // Max 1 recurrent task per day from this cycle, and must have capacity
-      if(recTasksOnDay===0&&(freeH===0||used+r.hours<=freeH)){
-        assigned=ds;break;
-      }
+      const freeH=dayH(dowOf(ds));
+      const used=assignedH(ds)+(dayUsed[ds]||0);
+      const avail=freeH-used;
+      if(avail<=0)continue;
+      const thisSlot=Math.min(hoursLeft,avail);
+      dayUsed[ds]=(dayUsed[ds]||0)+thisSlot;
+      created.push({id:'t'+Date.now()+ci+di,client:c.id,name:r.name+(hoursLeft>thisSlot?' (parte 1)':hoursLeft<r.hours?' (parte 2)':''),priority:2,date:ds,deadline:'',hours:thisSlot,notes:`Recurrente días ${r.fromDay}–${r.toDay}`,status:'sin empezar',timeLogs:[],createdAt:Date.now()+ci*100+di});
+      hoursLeft-=thisSlot;
     }
-    // Fallback: just spread evenly even if over capacity
-    if(!assigned) assigned=workingDays[i%workingDays.length];
-
-    dayTaskCount[assigned]=(dayTaskCount[assigned]||0)+1;
-    const t={
-      id:'t'+Date.now()+i,client:c.id,name:r.name,priority:2,
-      date:assigned,deadline:'',hours:r.hours,
-      notes:`Recurrente período ${r.fromDay}–${r.toDay}`,
-      status:'sin empezar',timeLogs:[],createdAt:Date.now()+i
-    };
-    created.push(t);
   });
 
-  tasks.push(...created);
-  save();
-
-  // Show distribution summary
-  const summary=created.map(t=>`${clientById(t.client).name} → ${t.date}`).join('\n');
-  alert(`${created.length} tareas creadas y distribuidas:\n\n${summary}`);
-  showView('semana');
+  tasks.push(...created);save();
+  const summary=created.map(t=>`${clientById(t.client).name} → ${t.date} (${t.hours}h)`).join('\n');
+  alert(`${created.length} tareas distribuidas:\n\n${summary}`);
+  showView('calendario');
 }
 
 // ─── AGENCY ─────────────────────────────────────────────
 function renderAgency(){
-  document.getElementById('ag-list').innerHTML=agency.map(a=>`<div class="ag-item">
-    <div style="flex:1">
-      <div style="font-size:13px;color:var(--text)">${a.idea}</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px">${a.date}</div>
-    </div>
+  const el=document.getElementById('ag-list');
+  el.innerHTML=agency.map(a=>`<div class="ag-item">
+    <div style="flex:1"><div style="font-size:13px">${a.idea}</div><div style="font-size:11px;color:var(--text3)">${a.date}</div></div>
     <select class="mini-sel" onchange="changeAgStatus('${a.id}',this.value)">
       <option${a.status==='sin empezar'?' selected':''}>sin empezar</option>
       <option${a.status==='en progreso'?' selected':''}>en progreso</option>
       <option${a.status==='listo'?' selected':''}>listo</option>
     </select>
-    <button class="bsm bdel" style="border-color:transparent;margin-left:4px" onclick="deleteAg('${a.id}')">✕</button>
-  </div>`).join('')||'<div class="empty"><div class="ei">⊡</div>La cola está vacía</div>';
-  document.getElementById('cn-ag').textContent=agency.filter(a=>a.status!=='listo').length;
+    <button class="bsm bdel" style="border-color:transparent;margin-left:4px" onclick="delAg('${a.id}')">✕</button>
+  </div>`).join('')||'<div class="empty"><div class="ei">⊡</div>Cola vacía</div>';
+  const cnt=agency.filter(a=>a.status!=='listo').length;
+  const el2=document.getElementById('cn-ag');el2.textContent=cnt;el2.style.display=cnt>0?'':'none';
 }
 function addAgency(){const idea=document.getElementById('ag-idea').value.trim();if(!idea)return;agency.push({id:'a'+Date.now(),idea,date:todayStr(),status:'sin empezar'});save();document.getElementById('ag-idea').value='';renderAgency()}
 function changeAgStatus(id,v){const a=agency.find(x=>x.id===id);if(a){a.status=v;save();renderAgency()}}
-function deleteAg(id){agency=agency.filter(a=>a.id!==id);save();renderAgency()}
+function delAg(id){agency=agency.filter(a=>a.id!==id);save();renderAgency()}
 
 // ─── LEARNED ────────────────────────────────────────────
 function renderLearned(){
   const fc=document.getElementById('lrn-client').value;
   const entries=Object.entries(learned).filter(([k])=>!fc||k.startsWith(fc+'::'));
   document.getElementById('lrn-list').innerHTML=entries.length?entries.sort((a,b)=>b[1].total-a[1].total).map(([k,d])=>{
-    const[cid,name]=k.split('::');
-    const c=clientById(cid);
-    const avg=d.total/d.count;
-    // Find matching tasks for notes
-    const matchingTasks=tasks.filter(t=>t.client===cid&&norm(t.name)===name);
-    const hasNotes=matchingTasks.some(t=>t.notes);
-    return `<div class="lrn-item" style="cursor:pointer" onclick="openLearnedDetail('${encodeURIComponent(k)}')">
+    const[cid,name]=k.split('::');const c=clientById(cid);const avg=d.total/d.count;
+    return `<div class="lrn-item" onclick="openLearnedDetail('${encodeURIComponent(k)}')">
       <div style="flex:1">
-        <div style="font-size:13px;font-weight:500;font-family:var(--fh);display:flex;align-items:center;gap:6px">
-          ${name}
-          ${hasNotes?`<span style="font-size:10px;color:var(--text3);border:1px solid var(--border2);border-radius:3px;padding:1px 5px">notas</span>`:''}
-        </div>
-        <div style="font-size:11px;color:${c.color};margin-top:2px">${c.name} · ${d.count} sesión${d.count!==1?'es':''}</div>
+        <div style="font-size:13px;font-weight:500;font-family:var(--fh)">${name}</div>
+        <div style="font-size:11px;color:${c.color};margin-top:1px">${c.name} · ${d.count} sesión${d.count!==1?'es':''}</div>
       </div>
       <div style="text-align:right">
-        <div style="font-size:16px;font-weight:700;font-family:var(--fh);color:var(--accent)">${avg.toFixed(1)}h</div>
-        <div style="font-size:11px;color:var(--text3)">Total: ${d.total.toFixed(1)}h · Ver detalle →</div>
+        <div style="font-size:15px;font-weight:700;font-family:var(--fh);color:var(--accent)">${avg.toFixed(1)}h</div>
+        <div style="font-size:11px;color:var(--text3)">Total: ${d.total.toFixed(1)}h</div>
       </div>
     </div>`;
-  }).join(''):`<div class="empty"><div class="ei">◎</div>Sin registros${fc?' para este cliente':' aún'}. Usa el cronómetro.</div>`;
+  }).join(''):`<div class="empty"><div class="ei">◷</div>Sin registros aún</div>`;
 }
 
 function openLearnedDetail(encodedKey){
   const k=decodeURIComponent(encodedKey);
-  const[cid,name]=k.split('::');
-  const c=clientById(cid);
-  const d=learned[k];if(!d)return;
+  const[cid,name]=k.split('::');const c=clientById(cid);const d=learned[k];if(!d)return;
   const avg=d.total/d.count;
-
-  // Find all matching tasks
   const matchingTasks=tasks.filter(t=>t.client===cid&&norm(t.name)===name);
-  const allLogs=matchingTasks.flatMap(t=>(t.timeLogs||[]).map(l=>({...l,taskId:t.id,notes:t.notes,date:l.date})));
-  allLogs.sort((a,b)=>b.date.localeCompare(a.date));
-
+  const allLogs=matchingTasks.flatMap(t=>(t.timeLogs||[]).map(l=>({...l,notes:t.notes}))).sort((a,b)=>b.date.localeCompare(a.date));
   const notesSet=[...new Set(matchingTasks.map(t=>t.notes).filter(Boolean))];
-
-  const logsHtml=allLogs.length?allLogs.map(l=>`
-    <div class="log-entry">
-      <div class="log-date">${l.date}</div>
-      <div class="log-dur">${l.hours.toFixed(2)}h · ${Math.round(l.hours*60)} min</div>
-    </div>`).join(''):'<div style="font-size:12px;color:var(--text3);padding:8px">Sin sesiones registradas</div>';
-
-  document.getElementById('md-title').textContent=name;
-  document.getElementById('md-title').dataset.id='';
-  document.getElementById('md-content').innerHTML=`
+  const logsHtml=allLogs.length?allLogs.map(l=>`<div class="log-entry"><div class="log-date">${l.date}</div><div class="log-dur">${l.hours.toFixed(2)}h · ${Math.round(l.hours*60)} min</div></div>`).join('')+`<div class="log-total">Total: <strong>${d.total.toFixed(2)}h</strong></div>`:'<div style="font-size:12px;color:var(--text3);padding:8px">Sin sesiones</div>';
+  document.getElementById('mt-title').textContent=name;document.getElementById('mt-title').dataset.id='';
+  document.getElementById('mt-content').innerHTML=`
     <div class="detail-row"><span class="detail-lbl">Cliente</span><span class="detail-val" style="display:flex;align-items:center;gap:6px"><span class="cdot" style="background:${c.color}"></span>${c.name}</span></div>
-    <div class="detail-row"><span class="detail-lbl">Promedio</span><span class="detail-val" style="font-size:16px;font-weight:700;color:var(--accent)">${avg.toFixed(2)}h por sesión</span></div>
-    <div class="detail-row"><span class="detail-lbl">Total acumulado</span><span class="detail-val">${d.total.toFixed(2)}h en ${d.count} sesión${d.count!==1?'es':''}</span></div>
+    <div class="detail-row"><span class="detail-lbl">Promedio</span><span class="detail-val" style="font-size:16px;font-weight:700;color:var(--accent)">${avg.toFixed(2)}h/sesión</span></div>
+    <div class="detail-row"><span class="detail-lbl">Acumulado</span><span class="detail-val">${d.total.toFixed(2)}h en ${d.count} sesión${d.count!==1?'es':''}</span></div>
     ${notesSet.length?`<div class="detail-row"><span class="detail-lbl">Notas</span><span class="detail-val" style="color:var(--text2)">${notesSet.join(' / ')}</span></div>`:''}
-    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-      <h3 style="margin-bottom:8px">Historial de sesiones</h3>
-      ${logsHtml}
-      <div class="log-total">Tiempo total registrado: <strong>${d.total.toFixed(2)}h</strong></div>
-    </div>
-  `;
-  // Hide timer btn for learned detail
-  document.getElementById('md-timer-btn').style.display='none';
-  document.getElementById('modal-detail').classList.add('open');
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><h3 style="margin-bottom:8px">Historial</h3>${logsHtml}</div>`;
+  document.getElementById('mt-timer-btn').style.display='none';
+  document.getElementById('mt-stop-btn').style.display='none';
+  document.getElementById('modal-task').classList.add('open');
 }
+
+// ─── SCHEDULE ────────────────────────────────────────────
+function renderScheduleEditor(){
+  const sum=document.getElementById('schedule-summary');
+  if(sum){
+    sum.innerHTML=[1,2,3,4,5].map(dow=>{
+      const slots=editableSchedule[dow]||[];
+      const totalH=slots.reduce((a,s)=>a+slotH(s),0);
+      const color=totalH>=5?'var(--green)':totalH>=2?'var(--amber)':'var(--text3)';
+      return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 8px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);font-family:var(--fh);font-weight:600;text-transform:uppercase;margin-bottom:3px">${DNS[dow]}</div>
+        <div style="font-size:18px;font-weight:700;font-family:var(--fh);color:${color}">${totalH.toFixed(1)}</div>
+        <div style="font-size:10px;color:var(--text3)">h disponibles</div>
+      </div>`;
+    }).join('');
+  }
+  const ed=document.getElementById('schedule-editor');if(!ed)return;
+  ed.innerHTML=[1,2,3,4,5].map(dow=>{
+    const slots=editableSchedule[dow]||[];
+    const totalH=slots.reduce((a,s)=>a+slotH(s),0);
+    const color=totalH>=5?'var(--green)':totalH>=2?'var(--amber)':'var(--text3)';
+    return `<div class="sched-row">
+      <div><span class="sched-day">${DN[dow]}</span><div style="font-size:11px;color:${color};margin-top:1px">${totalH.toFixed(1)}h libres</div></div>
+      <div class="sched-slots">
+        ${slots.map((sl,i)=>`<div class="sched-slot">
+          <input type="time" value="${sl.s}" onchange="updateSlot(${dow},${i},'s',this.value)">
+          <span style="color:var(--text3)">–</span>
+          <input type="time" value="${sl.e}" onchange="updateSlot(${dow},${i},'e',this.value)">
+          <button class="rm" onclick="removeSlot(${dow},${i})">×</button>
+        </div>`).join('')}
+        <button class="add-slot" onclick="addSlot(${dow})">+ bloque</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function updateSlot(dow,i,f,v){if(!editableSchedule[dow])editableSchedule[dow]=[];editableSchedule[dow][i][f]=v;renderScheduleEditor()}
+function removeSlot(dow,i){editableSchedule[dow].splice(i,1);renderScheduleEditor()}
+function addSlot(dow){if(!editableSchedule[dow])editableSchedule[dow]=[];editableSchedule[dow].push({s:'10:00',e:'12:00'});renderScheduleEditor()}
+function saveSchedule(){SS('dg4_schedule',editableSchedule);Object.assign(SCHEDULE,editableSchedule);alert('Horarios guardados.');showView('calendario')}
+function resetSchedule(){if(!confirm('¿Restaurar horarios por defecto?'))return;editableSchedule=JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));Object.assign(SCHEDULE,editableSchedule);SS('dg4_schedule',editableSchedule);renderScheduleEditor()}
 
 // ─── SIDEBAR ────────────────────────────────────────────
 function renderSidebar(){
@@ -1194,315 +1365,117 @@ function renderSidebar(){
     </button>`;
   }).join('');
 }
+function filterClient(cid){document.getElementById('kb-client').value=cid;showView('kanban')}
 
-function filterClient(cid){document.getElementById('f-client').value=cid;showView('todas')}
-
-// ─── SELECTS INIT ────────────────────────────────────────
 function initSelects(){
-  ['n-client','f-client','r-client','lrn-client'].forEach(sid=>{
+  ['n-client','kb-client','r-client','lrn-client'].forEach(sid=>{
     const el=document.getElementById(sid);if(!el)return;
-    const isFilter=sid==='f-client'||sid==='r-client'||sid==='lrn-client';
-    const placeholder=isFilter?'<option value="">Todos los clientes</option>':'<option value="">Selecciona cliente...</option>';
-    el.innerHTML=placeholder+CLIENTS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+    const isFilter=sid!=='n-client';
+    el.innerHTML=(isFilter?'<option value="">Todos los clientes</option>':'<option value="">Selecciona cliente...</option>')+CLIENTS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
   });
 }
 
 // ─── VIEWS ──────────────────────────────────────────────
-const VIEWS=['hoy','semana','todas','nueva','recurrentes','agencia','aprendizaje','ajustes'];
+const VIEWS=['calendario','kanban','memoria','nueva','recurrentes','agencia','tiempos','ajustes'];
 function showView(name){
-  VIEWS.forEach(v=>document.getElementById('view-'+v).classList.toggle('active',v===name));
+  VIEWS.forEach(v=>{const el=document.getElementById('view-'+v);if(el)el.classList.toggle('active',v===name)});
   document.querySelectorAll('.nav-item').forEach(el=>{
     const t=el.textContent.trim().toLowerCase().replace(/\s+/g,'');
-    const map={hoy:'hoy',semana:'semana',todas:'todas',nuevatarea:'nueva',recurrentes:'recurrentes',agencia:'agencia',tiempos:'aprendizaje'};
+    const map={calendario:'calendario',tareas:'kanban',memoria:'memoria',nuevatarea:'nueva',recurrentes:'recurrentes',agencia:'agencia',tiempos:'tiempos',horarios:'ajustes'};
     el.classList.toggle('active',map[t]===name);
   });
-  if(name==='hoy')renderToday();
-  if(name==='semana'){renderWeek();renderWeekDay(selectedWeekDay)}
-  if(name==='todas')renderAll();
+  if(name==='calendario')renderCalendar();
+  if(name==='kanban')renderKanban();
+  if(name==='memoria')renderMemory();
   if(name==='recurrentes')renderRecurrents();
   if(name==='agencia')renderAgency();
-  if(name==='ajustes'){renderScheduleEditor();}
-  if(name==='aprendizaje')renderLearned();
+  if(name==='tiempos')renderLearned();
+  if(name==='ajustes')renderScheduleEditor();
 }
 
 function refreshAll(){
-  renderToday();renderSidebar();renderAll();
-  if(document.getElementById('view-semana').classList.contains('active')){renderWeek();renderWeekDay(selectedWeekDay)}
-}
-
-// ─── TOPBAR DATE ─────────────────────────────────────────
-function updateTopDate(){
-  const d=new Date();
-  document.getElementById('top-date').textContent=`${DN[d.getDay()]} ${d.getDate()} ${MN[d.getMonth()]} ${d.getFullYear()}`;
+  renderSidebar();renderKanban();
+  if(document.getElementById('view-calendario').classList.contains('active'))renderCalendar();
 }
 
 // ─── GOOGLE CALENDAR ─────────────────────────────────────
 const CLIENT_ID='17925868051-3prfv5ugc91phbhav1hgjt2kmmv9fke5.apps.googleusercontent.com';
 const SCOPES='https://www.googleapis.com/auth/calendar.readonly';
-let gcalToken=LS('dg3_gcal_token',null);
-let calEvents=[];
-let calEventsByDay={};
-
-function gcalDisconnect(){
-  if(gcalToken&&gcalToken.token)google.accounts.oauth2.revoke(gcalToken.token,()=>{});
-  gcalToken=null;SS('dg3_gcal_token',null);calEvents=[];calEventsByDay={};
-  updateGcalBtn(false);renderCalEvents();
-}
-
-function updateGcalBtn(connected){
-  const btn=document.getElementById('gcal-btn');
-  const lbl=document.getElementById('gcal-label');
-  const st=document.getElementById('gcal-status');
-  if(connected){
-    btn.classList.add('connected');lbl.textContent='Google Calendar conectado';
-    if(st)st.textContent='Sincronizado';
-  } else {
-    btn.classList.remove('connected');lbl.textContent='Conectar Google Calendar';
-    if(st)st.textContent='Sin conectar';
-  }
-}
-
-async function fetchCalendarEvents(){
-  if(!gcalToken||Date.now()>gcalToken.expires){gcalToken=null;SS('dg3_gcal_token',null);updateGcalBtn(false);return}
-  // Fetch the full current week view
-  const dates=getWeekDates(weekOffset);
-  const weekStart=new Date(dates[0]+'T00:00:00');
-  const weekEnd=new Date(dates[6]+'T23:59:59');
-  try{
-    const res=await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${weekStart.toISOString()}&timeMax=${weekEnd.toISOString()}&singleEvents=true&orderBy=startTime&maxResults=100`,{
-      headers:{Authorization:`Bearer ${gcalToken.token}`}
-    });
-    if(!res.ok){if(res.status===401){gcalToken=null;SS('dg3_gcal_token',null);updateGcalBtn(false);}return}
-    const data=await res.json();
-    const items=(data.items||[]).filter(e=>e.start&&(e.start.dateTime||e.start.date));
-    calEventsByDay={};
-    items.forEach(e=>{
-      const ds=e.start.dateTime?e.start.dateTime.slice(0,10):e.start.date;
-      if(!calEventsByDay[ds])calEventsByDay[ds]=[];
-      calEventsByDay[ds].push(e);
-    });
-    calEvents=calEventsByDay[todayStr()]||[];
-    renderCalEvents();updateFreeTime();
-    if(document.getElementById('view-semana').classList.contains('active'))renderWeek();
-  } catch(e){console.error('GCal error',e)}
-}
-
-function renderCalEvents(){
-  const el=document.getElementById('cal-events-list');
-  const st=document.getElementById('gcal-status');
-  if(!el)return;
-  if(!gcalToken){
-    el.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;padding:16px">Conecta Google Calendar<br>para ver tus reuniones</div>';
-    if(st)st.textContent='Sin conectar';
-    return;
-  }
-  if(!calEvents.length){
-    el.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px">Sin reuniones hoy</div>';
-    if(st)st.textContent='Sin reuniones hoy';
-    return;
-  }
-  if(st)st.textContent=`${calEvents.length} reunión${calEvents.length!==1?'es':''}`;
-  el.innerHTML=calEvents.map(e=>{
-    const start=e.start.dateTime?new Date(e.start.dateTime):null;
-    const end=e.end&&e.end.dateTime?new Date(e.end.dateTime):null;
-    const timeTxt=start?`${pad(start.getHours())}:${pad(start.getMinutes())}${end?`–${pad(end.getHours())}:${pad(end.getMinutes())}`:''}`:' Todo el día';
-    const dur=start&&end?(end-start)/3600000:0;
-    return `<div class="cal-event">
-      <span class="cal-event-dot"></span>
-      <span class="cal-event-time">${timeTxt}</span>
-      <span class="cal-event-name" title="${e.summary||'Sin título'}">${e.summary||'Sin título'}${dur>0?` <span style="color:var(--text3)">(${dur.toFixed(1)}h)</span>`:''}</span>
-    </div>`;
-  }).join('');
-}
-
-function getMeetingHoursToday(){
-  return calEvents.reduce((a,e)=>{
-    if(!e.start.dateTime||!e.end||!e.end.dateTime)return a;
-    return a+(new Date(e.end.dateTime)-new Date(e.start.dateTime))/3600000;
-  },0);
-}
-
-function updateFreeTime(){
-  const el=document.getElementById('free-after-meetings');if(!el)return;
-  if(!gcalToken||!calEvents.length){el.style.display='none';return}
-  const dow=new Date().getDay();
-  const totalH=dayH(dow);
-  const meetH=getMeetingHoursToday();
-  const assignedH_today=assignedH(todayStr());
-  const netFree=totalH-meetH-assignedH_today;
-  el.style.display='block';
-  el.className='free-remaining'+(netFree<0?' over':netFree<1?' warn':'');
-  el.textContent=netFree>=0
-    ?`Libre tras reuniones: ${netFree.toFixed(1)}h (${meetH.toFixed(1)}h en reuniones)`
-    :`⚠ Sobrecargado: ${Math.abs(netFree).toFixed(1)}h de déficit`;
-}
-
-// ─── SCHEDULE EDITOR ────────────────────────────────────
-const DEFAULT_SCHEDULE={
-  1:[{s:'11:00',e:'12:00'},{s:'18:00',e:'19:00'}],
-  2:[{s:'10:00',e:'11:00'},{s:'12:00',e:'13:00'},{s:'18:00',e:'19:00'}],
-  3:[{s:'11:00',e:'13:00'},{s:'16:00',e:'19:00'},{s:'22:00',e:'00:00'}],
-  4:[{s:'11:00',e:'13:00'},{s:'16:00',e:'19:00'},{s:'22:00',e:'00:00'}],
-  5:[{s:'11:00',e:'13:00'},{s:'16:00',e:'19:00'},{s:'22:00',e:'00:00'}],
-  6:[{s:'11:00',e:'13:00'},{s:'16:00',e:'19:00'}],
-  0:[{s:'10:00',e:'13:00'},{s:'16:00',e:'19:00'},{s:'22:00',e:'00:00'}]
-};
-
-let editableSchedule=LS('dg3_schedule',JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)));
-// sync SCHEDULE with stored
-Object.assign(SCHEDULE,editableSchedule);
-
-function renderScheduleEditor(){
-  const ed=document.getElementById('schedule-editor');if(!ed)return;
-
-  // Weekly summary cards
-  const sum=document.getElementById('schedule-summary');
-  if(sum){
-    sum.innerHTML=[1,2,3,4,5,6,0].map(dow=>{
-      const slots=editableSchedule[dow]||[];
-      const totalH=slots.reduce((a,s)=>a+slotH(s),0);
-      const color=totalH>=6?'var(--green)':totalH>=3?'var(--amber)':totalH>0?'var(--text2)':'var(--text3)';
-      return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 8px;text-align:center">
-        <div style="font-size:10px;color:var(--text3);font-family:var(--fh);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">${DNS[dow]}</div>
-        <div style="font-size:18px;font-weight:700;font-family:var(--fh);color:${color}">${totalH.toFixed(1)}</div>
-        <div style="font-size:10px;color:var(--text3)">horas</div>
-        <div style="margin-top:6px;display:flex;flex-direction:column;gap:2px">${slots.map(s=>`<div style="font-size:9px;color:var(--text3);background:var(--bg4);border-radius:3px;padding:1px 4px">${s.s}–${s.e}</div>`).join('')}</div>
-      </div>`;
-    }).join('');
-  }
-
-  // Editor rows
-  ed.innerHTML=[1,2,3,4,5,6,0].map(dow=>{
-    const slots=editableSchedule[dow]||[];
-    const totalH=slots.reduce((a,s)=>a+slotH(s),0);
-    const barColor=totalH>=6?'var(--green)':totalH>=3?'var(--amber)':'var(--text3)';
-    const slotsHtml=slots.map((sl,i)=>`
-      <div class="sched-slot">
-        <input type="time" value="${sl.s}" onchange="updateSlot(${dow},${i},'s',this.value)">
-        <span style="color:var(--text3)">–</span>
-        <input type="time" value="${sl.e}" onchange="updateSlot(${dow},${i},'e',this.value)">
-        <button class="rm" onclick="removeSlot(${dow},${i})">×</button>
-      </div>`).join('');
-    return `<div class="sched-row">
-      <div style="min-width:90px">
-        <span class="sched-day">${DN[dow]}</span>
-        <div style="font-size:11px;font-weight:600;color:${barColor};margin-top:2px">${totalH.toFixed(1)}h libres</div>
-      </div>
-      <div class="sched-slots">
-        ${slotsHtml}
-        <button class="add-slot" onclick="addSlot(${dow})">+ bloque</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function updateSlot(dow,i,field,val){
-  if(!editableSchedule[dow])editableSchedule[dow]=[];
-  editableSchedule[dow][i][field]=val;
-  renderScheduleEditor();
-}
-function removeSlot(dow,i){
-  editableSchedule[dow].splice(i,1);renderScheduleEditor();
-}
-function addSlot(dow){
-  if(!editableSchedule[dow])editableSchedule[dow]=[];
-  editableSchedule[dow].push({s:'09:00',e:'10:00'});renderScheduleEditor();
-}
-function saveSchedule(){
-  SS('dg3_schedule',editableSchedule);
-  Object.assign(SCHEDULE,editableSchedule);
-  alert('Horarios guardados. Los cambios se aplican inmediatamente.');
-  showView('hoy');
-}
-function resetSchedule(){
-  if(!confirm('¿Restaurar horarios por defecto?'))return;
-  editableSchedule=JSON.parse(JSON.stringify(DEFAULT_SCHEDULE));
-  Object.assign(SCHEDULE,editableSchedule);
-  SS('dg3_schedule',editableSchedule);
-  renderScheduleEditor();
-}
-
-// ─── INIT GCAL ON LOAD ───────────────────────────────────
+let gcalToken=LS('dg4_gcal_token',null);
 let gcalClient=null;
-
-function initGcalClient(){
-  if(typeof google==='undefined'||!google.accounts)return;
-  gcalClient=google.accounts.oauth2.initTokenClient({
-    client_id:CLIENT_ID,scope:SCOPES,
-    prompt:'',// silent — no popup if already consented
-    callback:(resp)=>{
-      if(resp.error)return;
-      gcalToken={token:resp.access_token,expires:Date.now()+resp.expires_in*1000};
-      SS('dg3_gcal_token',gcalToken);
-      updateGcalBtn(true);
-      fetchCalendarEvents();
-    }
-  });
-}
-
-function silentReconnect(){
-  if(!gcalClient)return;
-  // Request token silently (no user interaction if already consented)
-  gcalClient.requestAccessToken({prompt:''});
-}
 
 function gcalAuth(){
   if(gcalToken&&Date.now()<gcalToken.expires){gcalDisconnect();return}
   if(!gcalClient)initGcalClient();
-  if(!gcalClient)return;
-  gcalClient.requestAccessToken();
+  if(gcalClient)gcalClient.requestAccessToken();
+}
+function gcalDisconnect(){
+  if(gcalToken?.token)google.accounts.oauth2.revoke(gcalToken.token,()=>{});
+  gcalToken=null;SS('dg4_gcal_token',null);calEvents=[];calEventsByDay={};
+  updateGcalBtn(false);renderCalendar();
+}
+function initGcalClient(){
+  if(typeof google==='undefined'||!google.accounts)return;
+  gcalClient=google.accounts.oauth2.initTokenClient({
+    client_id:CLIENT_ID,scope:SCOPES,prompt:'',
+    callback:(resp)=>{
+      if(resp.error)return;
+      gcalToken={token:resp.access_token,expires:Date.now()+resp.expires_in*1000};
+      SS('dg4_gcal_token',gcalToken);updateGcalBtn(true);fetchCalendarEvents();
+    }
+  });
+}
+function updateGcalBtn(connected){
+  const btn=document.getElementById('gcal-btn');
+  const lbl=document.getElementById('gcal-label');
+  if(connected){btn.classList.add('connected');lbl.textContent='Calendar conectado'}
+  else{btn.classList.remove('connected');lbl.textContent='Conectar Calendar'}
+}
+async function fetchCalendarEvents(){
+  if(!gcalToken||Date.now()>gcalToken.expires){gcalToken=null;SS('dg4_gcal_token',null);updateGcalBtn(false);return}
+  const dates=getWeekDates(calOffset);
+  const start=new Date(dates[0]+'T00:00:00');
+  const end=new Date(dates[4]+'T23:59:59');
+  try{
+    const res=await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${start.toISOString()}&timeMax=${end.toISOString()}&singleEvents=true&orderBy=startTime&maxResults=100`,{headers:{Authorization:`Bearer ${gcalToken.token}`}});
+    if(!res.ok){if(res.status===401){gcalToken=null;SS('dg4_gcal_token',null);updateGcalBtn(false)}return}
+    const data=await res.json();
+    const items=(data.items||[]).filter(e=>e.start&&(e.start.dateTime||e.start.date));
+    calEventsByDay={};
+    items.forEach(e=>{const ds=e.start.dateTime?e.start.dateTime.slice(0,10):e.start.date;if(!calEventsByDay[ds])calEventsByDay[ds]=[];calEventsByDay[ds].push(e)});
+    calEvents=calEventsByDay[todayStr()]||[];
+    renderCalendar();
+  }catch(e){console.error('GCal',e)}
 }
 
-function checkAndRefreshToken(){
+function checkToken(){
   if(!gcalToken)return;
-  const timeLeft=gcalToken.expires-Date.now();
-  // Refresh if less than 5 minutes left
-  if(timeLeft<5*60*1000){
-    silentReconnect();
-  }
+  if(Date.now()>gcalToken.expires-5*60*1000){if(gcalClient)gcalClient.requestAccessToken({prompt:''})}
+  else fetchCalendarEvents();
 }
 
 window.addEventListener('load',()=>{
-  // Wait for Google script to load
   const tryInit=()=>{
     if(typeof google!=='undefined'&&google.accounts){
       initGcalClient();
       if(gcalToken){
-        if(Date.now()<gcalToken.expires){
-          updateGcalBtn(true);
-          fetchCalendarEvents();
-        } else {
-          // Token expired — reconnect silently
-          silentReconnect();
-        }
+        if(Date.now()<gcalToken.expires){updateGcalBtn(true);fetchCalendarEvents()}
+        else if(gcalClient)gcalClient.requestAccessToken({prompt:''});
       }
-    } else {
-      setTimeout(tryInit,500);
-    }
+    } else setTimeout(tryInit,500);
   };
   setTimeout(tryInit,500);
-
-  // Check token every minute and refresh proactively
-  setInterval(()=>{
-    checkAndRefreshToken();
-    if(gcalToken&&Date.now()<gcalToken.expires){
-      fetchCalendarEvents();
-    }
-  },5*60*1000);
+  setInterval(checkToken,5*60*1000);
 });
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&gcalToken){if(Date.now()>gcalToken.expires){if(gcalClient)gcalClient.requestAccessToken({prompt:''})}else fetchCalendarEvents()}});
 
-// Also reconnect when tab becomes visible again (user reopens laptop)
-document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='visible'&&gcalToken){
-    if(Date.now()>gcalToken.expires){
-      silentReconnect();
-    } else {
-      fetchCalendarEvents();
-    }
-  }
-});
+// ─── TOPBAR DATE ────────────────────────────────────────
+function updateTopDate(){const d=new Date();document.getElementById('top-date').textContent=`${DN[d.getDay()]} ${d.getDate()} ${MN[d.getMonth()]} ${d.getFullYear()}`}
 
-initSelects();renderSidebar();renderToday();updateTopDate();
+// ─── INIT ────────────────────────────────────────────────
+initSelects();renderSidebar();updateTopDate();
+selectedDay=todayStr();
+showView('calendario');
 setInterval(updateTopDate,60000);
 </script>
 </body>
