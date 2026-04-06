@@ -1876,21 +1876,21 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 // ─── PROJECTS ────────────────────────────────────────────
 const LAUNCH_TEMPLATE=[
-  {id:'p1',name:'Briefing',days:3,type:'mine',subtasks:['Formulario de expectativas','Cliente ideal','Autoridad del cliente','Epifanía / historia','Panel de métricas'],needsMeeting:false},
-  {id:'p2',name:'Análisis de audiencia',days:7,type:'delegated',subtasks:['Buscar leadmagnet','Crear guión del reel','Grabar y editar reel','Estrategia de historias','Automatización GHL/Manychat','Lanzarlo'],needsMeeting:false},
-  {id:'p3',name:'Posicionamiento estratégico',days:5,type:'mine',subtasks:['Cliente ideal','Propuesta de valor','Comunicación de la propuesta','La oferta','Primer aterrizaje','Reunión con cliente','Mejoras post-reunión'],needsMeeting:true},
-  {id:'p4',name:'Estrategia de historias',days:7,type:'mine',subtasks:['Entrevista de personalidad','Analizar entrevista','Diseñar estrategia de comunicación','Reunión con cliente','Cerrar detalles post-reunión'],needsMeeting:true},
-  {id:'p5',name:'Marketing de contenidos',days:10,type:'mine',subtasks:['Revisar estrategia y crear ángulos','Guiones de vídeos (1-2 días)','Grabación (3 días)','Edición (5-7 días)','Subir al drive'],needsMeeting:false},
-  {id:'p6',name:'Comunicación grupo WhatsApp',days:5,type:'delegated',subtasks:['Crear grupo y mensaje bienvenida','Configurar automatización','Mensajes de calentamiento','Mensajes clave: inicio, recordatorios, cierre'],needsMeeting:false},
-  {id:'p7',name:'Afiliados y lives',days:14,type:'delegated',subtasks:['Crear materiales para afiliados','Estrategias de historias para afiliados','Emails de ejemplo','Páginas web de afiliados','Contactar afiliados','Reunión explicativa','Seguimiento diario'],needsMeeting:true},
-  {id:'p8',name:'Preparación de anuncios',days:12,type:'delegated',subtasks:['Estrategia y presupuesto','Audiencias frías/templadas/calientes','Creatividades y copies (3 ángulos)','Configurar campañas en Business Manager','Revisar píxel y formularios'],needsMeeting:false},
-  {id:'p9',name:'Páginas web',days:10,type:'delegated',subtasks:['Guionizar copy (3 días - tuyo)','Aprobación cliente','Landing de registro','Página de confirmación','Página de capítulos y replay','Página de ventas y agradecimiento','Revisar píxel en todo'],needsMeeting:false},
-  {id:'p10',name:'Gestión comercial',days:5,type:'mine',subtasks:['Detallar la oferta','Procesos de setting','Embudo comercial completo'],needsMeeting:false},
-  {id:'p11',name:'Automatizaciones',days:7,type:'delegated',subtasks:['Secuencia email marketing','Flujo WhatsApp/chatbot','Integrar formularios con CRM','Testear todos los flujos'],needsMeeting:false},
-  {id:'p12',name:'Publicidad activa',days:14,type:'delegated',subtasks:['Activar campañas','Monitorear CPL/CTR/leads','Optimizar cada 24-48h','Ajustar presupuesto','Coordinar creatividades'],needsMeeting:false},
-  {id:'p13',name:'Clase peti comité',days:7,type:'mine',subtasks:['Invitar clientes sin producto nuevo','Preparar clase íntima','Testimonios y casos de éxito','CTA directo al final'],needsMeeting:false},
-  {id:'p14',name:'Capítulos del evento',days:21,type:'mine',subtasks:['Definir número de capítulos','Estructura de cada capítulo','Presentaciones y materiales','Recordatorios por capítulo'],needsMeeting:false},
-  {id:'p15',name:'Evento online',days:10,type:'mine',subtasks:['Guion y presentación del evento','Configurar plataforma de transmisión','Prueba técnica 24h antes','Moderar chat durante evento','Grabar para replay'],needsMeeting:false},
+  {id:'p1',name:'Briefing',hours:4,type:'mine',subtasks:['Formulario de expectativas','Cliente ideal','Autoridad del cliente','Epifanía / historia','Panel de métricas'],needsMeeting:false},
+  {id:'p2',name:'Análisis de audiencia',hours:6,type:'delegated',subtasks:['Buscar leadmagnet','Crear guión del reel','Grabar y editar reel','Estrategia de historias','Automatización GHL/Manychat','Lanzarlo'],needsMeeting:false},
+  {id:'p3',name:'Posicionamiento estratégico',hours:8,type:'mine',subtasks:['Cliente ideal','Propuesta de valor','Comunicación de la propuesta','La oferta','Primer aterrizaje','Reunión con cliente','Mejoras post-reunión'],needsMeeting:true},
+  {id:'p4',name:'Estrategia de historias',hours:10,type:'mine',subtasks:['Entrevista de personalidad','Analizar entrevista','Diseñar estrategia de comunicación','Reunión con cliente','Cerrar detalles post-reunión'],needsMeeting:true},
+  {id:'p5',name:'Marketing de contenidos',hours:8,type:'mine',subtasks:['Revisar estrategia y crear ángulos','Guiones de vídeos','Revisar grabaciones','Revisar edición final','Subir al drive'],needsMeeting:false},
+  {id:'p6',name:'Comunicación grupo WhatsApp',hours:5,type:'delegated',subtasks:['Crear grupo y mensaje bienvenida','Configurar automatización','Mensajes de calentamiento','Mensajes clave: inicio, recordatorios, cierre'],needsMeeting:false},
+  {id:'p7',name:'Afiliados y lives',hours:8,type:'delegated',subtasks:['Crear materiales para afiliados','Estrategias de historias para afiliados','Emails de ejemplo','Páginas web de afiliados','Contactar afiliados','Reunión explicativa','Seguimiento diario'],needsMeeting:true},
+  {id:'p8',name:'Preparación de anuncios',hours:10,type:'delegated',subtasks:['Estrategia y presupuesto','Audiencias frías/templadas/calientes','Creatividades y copies (3 ángulos)','Configurar campañas en Business Manager','Revisar píxel y formularios'],needsMeeting:false},
+  {id:'p9',name:'Páginas web',hours:6,type:'delegated',subtasks:['Guionizar copy','Aprobación cliente','Landing de registro','Página de confirmación','Página de ventas y agradecimiento','Revisar píxel en todo'],needsMeeting:false},
+  {id:'p10',name:'Gestión comercial',hours:6,type:'mine',subtasks:['Detallar la oferta','Procesos de setting','Embudo comercial completo'],needsMeeting:false},
+  {id:'p11',name:'Automatizaciones',hours:4,type:'delegated',subtasks:['Secuencia email marketing','Flujo WhatsApp/chatbot','Integrar formularios con CRM','Testear todos los flujos'],needsMeeting:false},
+  {id:'p12',name:'Publicidad activa',hours:6,type:'delegated',subtasks:['Activar campañas','Monitorear CPL/CTR/leads','Optimizar cada 24-48h','Ajustar presupuesto','Coordinar creatividades'],needsMeeting:false},
+  {id:'p13',name:'Clase peti comité',hours:8,type:'mine',subtasks:['Invitar clientes sin producto nuevo','Preparar clase íntima','Testimonios y casos de éxito','CTA directo al final'],needsMeeting:false},
+  {id:'p14',name:'Capítulos del evento',hours:12,type:'mine',subtasks:['Definir número de capítulos','Estructura de cada capítulo','Presentaciones y materiales','Recordatorios por capítulo'],needsMeeting:false},
+  {id:'p15',name:'Evento online',hours:6,type:'mine',subtasks:['Guion y presentación del evento','Configurar plataforma de transmisión','Prueba técnica 24h antes','Moderar chat durante evento','Grabar para replay'],needsMeeting:false},
 ];
 
 let projects=LS('diego_os_projects',[]);
@@ -1902,12 +1902,12 @@ function calcProjDays(){
   if(!start||!end)return;
   const s=new Date(start),e=new Date(end);
   const diffDays=Math.round((e-s)/(1000*60*60*24));
-  let workDays=0;
+  let totalAvailH=0;
   for(let d=new Date(s);d<=e;d.setDate(d.getDate()+1)){
-    const dow=d.getDay();if(dow!==0&&dow!==6)workDays++;
+    const dow=d.getDay();if(dow!==0&&dow!==6)totalAvailH+=dayH(dow);
   }
   const info=document.getElementById('pj-days-info');
-  info.innerHTML=`<span style="color:var(--accent);font-weight:600">${workDays} días laborables</span> · ${diffDays} días totales hasta el evento`;
+  info.innerHTML=`<span style="color:var(--accent);font-weight:600">${totalAvailH.toFixed(0)}h disponibles</span> · ${Math.round(totalAvailH*0.7)}h para proyecto (70%) · ${diffDays} días totales`;
   updateDistribution();
 }
 
@@ -1916,7 +1916,7 @@ function loadTemplate(){
   if(tmpl==='lanzamiento'){
     editingPhases=LAUNCH_TEMPLATE.map(p=>({...p,subtasks:[...p.subtasks],enabled:true}));
   } else {
-    editingPhases=[{id:'pc1',name:'Nueva fase',days:5,type:'mine',subtasks:[],needsMeeting:false,enabled:true}];
+    editingPhases=[{id:'pc1',name:'Nueva fase',hours:4,type:'mine',subtasks:[],needsMeeting:false,enabled:true}];
   }
   renderPhaseEditor();
   updateDistribution();
@@ -1932,8 +1932,8 @@ function renderPhaseEditor(){
         <div class="phase-sub">${p.subtasks.slice(0,2).join(' · ')}${p.subtasks.length>2?` +${p.subtasks.length-2}`:''}</div>
       </div>
       <div style="display:flex;align-items:center;gap:4px">
-        <input type="number" value="${p.days}" min="1" max="60" style="width:50px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:12px;padding:3px 6px;font-family:var(--fb)" onchange="editingPhases[${i}].days=+this.value;updateDistribution()">
-        <span style="font-size:10px;color:var(--text3)">días</span>
+        <input type="number" value="${p.hours}" min="0.5" max="100" step="0.5" style="width:55px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:12px;padding:3px 6px;font-family:var(--fb)" onchange="editingPhases[${i}].hours=+this.value;updateDistribution()">
+        <span style="font-size:10px;color:var(--text3)">h</span>
       </div>
       <div class="phase-type-toggle">
         <button class="ptt-btn ${p.type==='mine'?'active-mine':''}" onclick="setPhaseType(${i},'mine')">Mía</button>
@@ -1952,24 +1952,27 @@ function updateDistribution(){
   const el=document.getElementById('pj-distribution');
   if(!start||!end||!editingPhases.length){if(el)el.innerHTML='Selecciona fechas para ver la distribución';return}
 
-  const activePhasesmine=editingPhases.filter(p=>p.enabled&&p.type==='mine');
-  const totalMyDays=activePhasesmine.reduce((a,p)=>a+p.days,0);
+  const activeMinePhases=editingPhases.filter(p=>p.enabled&&p.type==='mine');
+  const totalMyHours=activeMinePhases.reduce((a,p)=>a+p.hours,0);
   const s=new Date(start),e=new Date(end);
-  let workDays=0;
-  for(let d=new Date(s);d<=e;d.setDate(d.getDate()+1)){const dow=d.getDay();if(dow!==0&&dow!==6)workDays++}
+  let totalAvailH=0;
+  for(let d=new Date(s);d<=e;d.setDate(d.getDate()+1)){
+    const dow=d.getDay();
+    if(dow!==0&&dow!==6)totalAvailH+=dayH(dow)*0.7;// 70% of each day
+  }
 
   const myPhases=editingPhases.filter(p=>p.enabled&&p.type==='mine').length;
   const delPhases=editingPhases.filter(p=>p.enabled&&p.type==='delegated').length;
-  const ok=totalMyDays<=workDays*0.7;
+  const ok=totalMyHours<=totalAvailH;
 
   if(el)el.innerHTML=`
     <div style="display:flex;gap:16px;margin-bottom:10px">
-      <div><div style="font-size:18px;font-weight:700;font-family:var(--fh);color:var(--accent)">${totalMyDays}</div><div style="font-size:10px;color:var(--text3)">días de trabajo tuyo</div></div>
+      <div><div style="font-size:18px;font-weight:700;font-family:var(--fh);color:var(--accent)">${totalMyHours}h</div><div style="font-size:10px;color:var(--text3)">horas de trabajo tuyo</div></div>
       <div><div style="font-size:18px;font-weight:700;font-family:var(--fh);color:var(--text2)">${myPhases}</div><div style="font-size:10px;color:var(--text3)">fases tuyas</div></div>
       <div><div style="font-size:18px;font-weight:700;font-family:var(--fh);color:var(--text3)">${delPhases}</div><div style="font-size:10px;color:var(--text3)">fases delegadas</div></div>
     </div>
-    <div style="font-size:12px;color:${ok?'var(--green)':'var(--red)'};font-weight:600">${ok?'✓ Distribución viable — queda >30% libre cada día':'⚠ Muy ajustado — considera ampliar el plazo o reducir fases'}</div>
-    <div style="font-size:11px;color:var(--text3);margin-top:4px">${workDays} días laborables disponibles · máximo ${Math.round(workDays*0.7)} días para proyecto (70%)</div>`;
+    <div style="font-size:12px;color:${ok?'var(--green)':'var(--red)'};font-weight:600">${ok?'✓ Distribución viable — queda >30% libre cada día':'⚠ Muy ajustado — considera ampliar el plazo o reducir horas'}</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px">${totalAvailH.toFixed(1)}h disponibles al 70% · necesitas ${totalMyHours}h</div>`;
 }
 
 function createProject(){
@@ -2000,7 +2003,6 @@ function createProject(){
 }
 
 function distributeProjectTasks(proj){
-  // Build list of working days from start to end
   const s=new Date(proj.start),e=new Date(proj.end);
   const workingDays=[];
   for(let d=new Date(s);d<=e;d.setDate(d.getDate()+1)){
@@ -2009,38 +2011,44 @@ function distributeProjectTasks(proj){
   }
 
   const minePhases=proj.phases.filter(p=>p.type==='mine');
-  let dayIdx=0;
+  // Track hours already allocated per day in this distribution run
+  const allocatedPerDay={};
 
   minePhases.forEach(phase=>{
-    let daysLeft=phase.days;
-    const phaseTaskDates=[];
-    while(daysLeft>0&&dayIdx<workingDays.length){
-      const ds=workingDays[dayIdx];
-      const freeH=dayHOfStr(ds);
-      const used=assignedH(ds)+tasks.filter(t=>t.date===ds&&t.projectId).reduce((a,t)=>a+(+t.hours||0),0);
-      const available=freeH-used;
-      const limit=freeH*0.7;// max 70% for project
+    let hoursLeft=phase.hours||2;
+    const phaseSlots=[];// {date, hours}
 
-      if(available>0&&used<limit){
-        const useH=Math.min(2,available,limit-used);// max 2h per day per phase
-        if(useH>=0.5){
-          phaseTaskDates.push({date:ds,hours:useH});
-          daysLeft--;
-        }
-      }
-      dayIdx++;
-      if(dayIdx>=workingDays.length)dayIdx=0;// wrap if not enough days
+    for(let di=0;di<workingDays.length&&hoursLeft>0;di++){
+      const ds=workingDays[di];
+      const freeH=dayHOfStr(ds);
+      if(freeH<=0)continue;
+
+      // Already used by existing tasks + already allocated in this run
+      const existingUsed=assignedH(ds);
+      const runUsed=allocatedPerDay[ds]||0;
+      const totalUsed=existingUsed+runUsed;
+      const cap=freeH*0.7;// 70% cap
+      const available=Math.max(0,cap-totalUsed);
+
+      if(available<0.5)continue;
+
+      const useH=Math.min(hoursLeft,available,2);// max 2h per day per phase
+      if(useH<0.5)continue;
+
+      phaseSlots.push({date:ds,hours:Math.round(useH*2)/2});
+      allocatedPerDay[ds]=(allocatedPerDay[ds]||0)+useH;
+      hoursLeft-=useH;
     }
 
-    // Create one task per allocated day
-    phaseTaskDates.forEach((alloc,i)=>{
+    // Create tasks from slots
+    phaseSlots.forEach((slot,i)=>{
       const t={
         id:'t'+Date.now()+Math.random().toString(36).slice(2,6),
         client:proj.client,
-        name:`[${proj.name}] ${phase.name}${phaseTaskDates.length>1?` (${i+1}/${phaseTaskDates.length})`:''}`,
-        priority:2,date:alloc.date,deadline:proj.end,
-        hours:alloc.hours,
-        notes:`Fase ${phase.id} del proyecto "${proj.name}". Subtareas: ${phase.subtasks.slice(0,3).join(', ')}`,
+        name:`[${proj.name}] ${phase.name}${phaseSlots.length>1?` (${i+1}/${phaseSlots.length})`:''}`,
+        priority:2,date:slot.date,deadline:proj.end,
+        hours:slot.hours,
+        notes:`Fase del proyecto "${proj.name}". Subtareas: ${phase.subtasks.slice(0,3).join(', ')}`,
         status:'sin empezar',timeLogs:[],createdAt:Date.now(),
         projectId:proj.id,phaseId:phase.id,isProject:true
       };
@@ -2208,10 +2216,10 @@ function editProject(projId){
               <div class="phase-sub">${(ph.subtasks||[]).slice(0,2).join(' · ')}</div>
             </div>
             <div style="display:flex;align-items:center;gap:4px">
-              <input type="number" value="${ph.days}" min="1" max="60"
-                id="edit-days-${ph.id}"
-                style="width:50px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:12px;padding:3px 6px;font-family:var(--fb)">
-              <span style="font-size:10px;color:var(--text3)">días</span>
+              <input type="number" value="${ph.hours||4}" min="0.5" max="100" step="0.5"
+                id="edit-hours-${ph.id}"
+                style="width:60px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:12px;padding:3px 6px;font-family:var(--fb)">
+              <span style="font-size:10px;color:var(--text3)">h</span>
             </div>
             <div class="phase-type-toggle">
               <button class="ptt-btn ${ph.type==='mine'?'active-mine':''}" id="edit-type-${ph.id}-mine"
@@ -2244,8 +2252,8 @@ function saveProjectEdits(projId){
   const proj=projects.find(p=>p.id===projId);if(!proj)return;
   // Read changes from DOM
   proj.phases.forEach(ph=>{
-    const daysEl=document.getElementById(`edit-days-${ph.id}`);
-    if(daysEl)ph.days=+daysEl.value||ph.days;
+    const hoursEl=document.getElementById(`edit-hours-${ph.id}`);
+    if(hoursEl)ph.hours=+hoursEl.value||ph.hours;
     const mineBtn=document.getElementById(`edit-type-${ph.id}-mine`);
     if(mineBtn){
       ph.type=mineBtn.classList.contains('active-mine')?'mine':'delegated';
