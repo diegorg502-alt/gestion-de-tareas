@@ -251,6 +251,38 @@ h3{font-family:var(--fh);font-size:10px;font-weight:600;color:var(--text2);text-
 .bar-fill.warn{background:var(--amber)}
 .bar-fill.over{background:var(--red)}
 
+/* PROJECTS */
+.proj-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px;cursor:pointer;transition:all .15s}
+.proj-card:hover{border-color:var(--border2);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.proj-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.proj-title{font-family:var(--fh);font-size:15px;font-weight:700;color:var(--text)}
+.proj-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-family:var(--fh);font-weight:600;text-transform:uppercase}
+.proj-active{background:rgba(37,99,168,.1);color:var(--blue);border:1px solid rgba(37,99,168,.2)}
+.proj-done{background:rgba(46,125,79,.1);color:var(--green);border:1px solid rgba(46,125,79,.2)}
+.proj-planned{background:rgba(138,106,74,.1);color:var(--accent);border:1px solid rgba(138,106,74,.2)}
+.proj-progress{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;margin:8px 0}
+.proj-progress-fill{height:100%;border-radius:2px;background:var(--blue);transition:width .3s}
+/* GANTT */
+.gantt-wrap{overflow-x:auto;padding-bottom:4px}
+.gantt-row{display:flex;align-items:center;gap:8px;padding:3px 0;min-width:600px}
+.gantt-label{width:180px;flex-shrink:0;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--fh)}
+.gantt-track{flex:1;height:20px;background:var(--bg3);border-radius:4px;position:relative;overflow:visible}
+.gantt-bar{position:absolute;height:100%;border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:10px;font-family:var(--fh);font-weight:600;white-space:nowrap;overflow:hidden;transition:opacity .15s}
+.gantt-bar:hover{opacity:.8;cursor:pointer}
+.gantt-bar.mine{background:var(--accent);color:#fff}
+.gantt-bar.delegated{background:var(--bg4);color:var(--text3);border:1px solid var(--border2)}
+.gantt-bar.done-bar{background:var(--green);color:#fff}
+.gantt-next{font-size:10px;color:var(--blue);font-family:var(--fh);font-weight:600;padding:2px 6px;background:rgba(37,99,168,.08);border:1px solid rgba(37,99,168,.2);border-radius:4px;white-space:nowrap}
+/* PHASE EDITOR */
+.phase-row{display:grid;grid-template-columns:28px 1fr 80px 100px 28px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.phase-row:last-child{border-bottom:none}
+.phase-num{width:24px;height:24px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:var(--fh);color:var(--text2);flex-shrink:0}
+.phase-name{font-size:12px;color:var(--text);font-family:var(--fh);font-weight:500}
+.phase-sub{font-size:10px;color:var(--text3);margin-top:1px}
+.phase-type-toggle{display:flex;gap:4px}
+.ptt-btn{height:22px;padding:0 7px;border-radius:4px;font-size:10px;font-family:var(--fh);font-weight:600;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--text3);transition:all .15s}
+.ptt-btn.active-mine{background:rgba(138,106,74,.1);color:var(--accent);border-color:rgba(138,106,74,.3)}
+.ptt-btn.active-del{background:var(--bg3);color:var(--text2);border-color:var(--border2)}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 </style>
@@ -285,10 +317,12 @@ h3{font-family:var(--fh);font-size:10px;font-weight:600;color:var(--text2);text-
   <div class="nav-lbl">Vistas</div>
   <button class="nav-item active" onclick="showView('calendario')"><span class="icon">◈</span>Calendario<span class="nav-cnt" id="cn-cal" style="display:none">0</span></button>
   <button class="nav-item" onclick="showView('kanban')"><span class="icon">▦</span>Tareas<span class="nav-cnt" id="cn-kb" style="display:none">0</span></button>
+  <button class="nav-item" onclick="showView('proyectos')"><span class="icon">◐</span>Proyectos<span class="nav-cnt" id="cn-proj" style="display:none">0</span></button>
   <button class="nav-item" onclick="showView('vencidas')"><span class="icon">⚠</span>Vencidas<span class="nav-cnt" id="cn-overdue" style="display:none;background:var(--red)">0</span></button>
   <button class="nav-item" onclick="showView('memoria')"><span class="icon">◎</span>Memoria</button>
   <div class="nav-lbl">Crear</div>
   <button class="nav-item" onclick="showView('nueva')"><span class="icon">+</span>Nueva tarea</button>
+  <button class="nav-item" onclick="showView('nuevo-proyecto')"><span class="icon">◑</span>Nuevo proyecto</button>
   <button class="nav-item" onclick="showView('recurrentes')"><span class="icon">↻</span>Recurrentes</button>
   <button class="nav-item" onclick="showView('agencia')"><span class="icon">⊡</span>Agencia<span class="nav-cnt" id="cn-ag" style="display:none">0</span></button>
   <div class="nav-lbl">Sistema</div>
@@ -463,6 +497,66 @@ h3{font-family:var(--fh);font-size:10px;font-weight:600;color:var(--text2);text-
       <button class="gcal-btn" onclick="resetSchedule()">Restaurar por defecto</button>
     </div>
   </div>
+</div>
+
+<!-- PROYECTOS -->
+<div class="view" id="view-proyectos">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <h1>Proyectos</h1>
+    <button class="btn-primary" onclick="showView('nuevo-proyecto')" style="height:32px;padding:0 14px;font-size:12px">+ Nuevo proyecto</button>
+  </div>
+  <div id="proj-list"></div>
+</div>
+
+<!-- NUEVO PROYECTO -->
+<div class="view" id="view-nuevo-proyecto">
+  <h1 style="margin-bottom:16px">Nuevo proyecto</h1>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+    <div class="card">
+      <h2>Datos del proyecto</h2>
+      <div class="fg">
+        <div class="fr fr2">
+          <div class="field"><label>Nombre del proyecto</label>
+            <input type="text" id="pj-name" placeholder="Ej: Lanzamiento Q2 Maria">
+          </div>
+          <div class="field"><label>Cliente</label>
+            <select id="pj-client"><option value="">Selecciona cliente...</option></select>
+          </div>
+        </div>
+        <div class="fr fr2">
+          <div class="field"><label>Fecha de inicio</label><input type="date" id="pj-start" onchange="calcProjDays()"></div>
+          <div class="field"><label>Fecha del evento / deadline</label><input type="date" id="pj-end" onchange="calcProjDays()"></div>
+        </div>
+        <div id="pj-days-info" style="font-size:12px;color:var(--text2);padding:6px 0"></div>
+        <div class="field"><label>Plantilla</label>
+          <select id="pj-template" onchange="loadTemplate()">
+            <option value="lanzamiento">Lanzamiento completo (15 fases)</option>
+            <option value="custom">Proyecto personalizado</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="background:rgba(138,106,74,.04);border-color:rgba(138,106,74,.2)">
+      <h2>Distribución estimada</h2>
+      <div id="pj-distribution" style="font-size:12px;color:var(--text2)">Selecciona fechas para ver la distribución</div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h2 style="margin:0">Fases del proyecto</h2>
+      <span style="font-size:11px;color:var(--text2)">Ajusta duración y tipo para cada fase</span>
+    </div>
+    <div id="pj-phases-editor"></div>
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:8px">
+      <button class="btn-primary" onclick="createProject()">Crear proyecto y distribuir tareas →</button>
+      <button class="gcal-btn" onclick="showView('proyectos')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROYECTO DETALLE -->
+<div class="view" id="view-proyecto-detalle">
+  <div id="proj-detail-content"></div>
 </div>
 
 </main>
@@ -1609,7 +1703,7 @@ function renderSidebar(){
 }
 
 function initSelects(){
-  ['n-client','kb-client','r-client','lrn-client'].forEach(sid=>{
+  ['n-client','kb-client','r-client','lrn-client','pj-client'].forEach(sid=>{
     const el=document.getElementById(sid);if(!el)return;
     const isFilter=sid!=='n-client';
     el.innerHTML=(isFilter?'<option value="">Todos los clientes</option>':'<option value="">Selecciona cliente...</option>')+CLIENTS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
@@ -1617,7 +1711,7 @@ function initSelects(){
 }
 
 // ─── VIEWS ──────────────────────────────────────────────
-const VIEWS=['calendario','kanban','vencidas','memoria','nueva','recurrentes','agencia','tiempos','ajustes'];
+const VIEWS=['calendario','kanban','proyectos','proyecto-detalle','nuevo-proyecto','vencidas','memoria','nueva','recurrentes','agencia','tiempos','ajustes'];
 function showView(name){
   VIEWS.forEach(v=>{const el=document.getElementById('view-'+v);if(el)el.classList.toggle('active',v===name)});
   document.querySelectorAll('.nav-item').forEach(el=>{
@@ -1626,6 +1720,8 @@ function showView(name){
     el.classList.toggle('active',map[t]===name);
   });
   if(name==='calendario')renderCalendar();
+  if(name==='proyectos')renderProjects();
+  if(name==='nuevo-proyecto'){loadTemplate();calcProjDays();}
   if(name==='kanban')renderKanban();
   if(name==='vencidas')renderOverdue();
   if(name==='memoria')renderMemory();
@@ -1712,7 +1808,315 @@ window.addEventListener('load',()=>{
 });
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&gcalToken){if(Date.now()>gcalToken.expires){if(gcalClient)gcalClient.requestAccessToken({prompt:''})}else fetchCalendarEvents()}});
 
-// ─── TOPBAR DATE ────────────────────────────────────────
+// ─── PROJECTS ────────────────────────────────────────────
+const LAUNCH_TEMPLATE=[
+  {id:'p1',name:'Briefing',days:3,type:'mine',subtasks:['Formulario de expectativas','Cliente ideal','Autoridad del cliente','Epifanía / historia','Panel de métricas'],needsMeeting:false},
+  {id:'p2',name:'Análisis de audiencia',days:7,type:'delegated',subtasks:['Buscar leadmagnet','Crear guión del reel','Grabar y editar reel','Estrategia de historias','Automatización GHL/Manychat','Lanzarlo'],needsMeeting:false},
+  {id:'p3',name:'Posicionamiento estratégico',days:5,type:'mine',subtasks:['Cliente ideal','Propuesta de valor','Comunicación de la propuesta','La oferta','Primer aterrizaje','Reunión con cliente','Mejoras post-reunión'],needsMeeting:true},
+  {id:'p4',name:'Estrategia de historias',days:7,type:'mine',subtasks:['Entrevista de personalidad','Analizar entrevista','Diseñar estrategia de comunicación','Reunión con cliente','Cerrar detalles post-reunión'],needsMeeting:true},
+  {id:'p5',name:'Marketing de contenidos',days:10,type:'mine',subtasks:['Revisar estrategia y crear ángulos','Guiones de vídeos (1-2 días)','Grabación (3 días)','Edición (5-7 días)','Subir al drive'],needsMeeting:false},
+  {id:'p6',name:'Comunicación grupo WhatsApp',days:5,type:'delegated',subtasks:['Crear grupo y mensaje bienvenida','Configurar automatización','Mensajes de calentamiento','Mensajes clave: inicio, recordatorios, cierre'],needsMeeting:false},
+  {id:'p7',name:'Afiliados y lives',days:14,type:'delegated',subtasks:['Crear materiales para afiliados','Estrategias de historias para afiliados','Emails de ejemplo','Páginas web de afiliados','Contactar afiliados','Reunión explicativa','Seguimiento diario'],needsMeeting:true},
+  {id:'p8',name:'Preparación de anuncios',days:12,type:'delegated',subtasks:['Estrategia y presupuesto','Audiencias frías/templadas/calientes','Creatividades y copies (3 ángulos)','Configurar campañas en Business Manager','Revisar píxel y formularios'],needsMeeting:false},
+  {id:'p9',name:'Páginas web',days:10,type:'delegated',subtasks:['Guionizar copy (3 días - tuyo)','Aprobación cliente','Landing de registro','Página de confirmación','Página de capítulos y replay','Página de ventas y agradecimiento','Revisar píxel en todo'],needsMeeting:false},
+  {id:'p10',name:'Gestión comercial',days:5,type:'mine',subtasks:['Detallar la oferta','Procesos de setting','Embudo comercial completo'],needsMeeting:false},
+  {id:'p11',name:'Automatizaciones',days:7,type:'delegated',subtasks:['Secuencia email marketing','Flujo WhatsApp/chatbot','Integrar formularios con CRM','Testear todos los flujos'],needsMeeting:false},
+  {id:'p12',name:'Publicidad activa',days:14,type:'delegated',subtasks:['Activar campañas','Monitorear CPL/CTR/leads','Optimizar cada 24-48h','Ajustar presupuesto','Coordinar creatividades'],needsMeeting:false},
+  {id:'p13',name:'Clase peti comité',days:7,type:'mine',subtasks:['Invitar clientes sin producto nuevo','Preparar clase íntima','Testimonios y casos de éxito','CTA directo al final'],needsMeeting:false},
+  {id:'p14',name:'Capítulos del evento',days:21,type:'mine',subtasks:['Definir número de capítulos','Estructura de cada capítulo','Presentaciones y materiales','Recordatorios por capítulo'],needsMeeting:false},
+  {id:'p15',name:'Evento online',days:10,type:'mine',subtasks:['Guion y presentación del evento','Configurar plataforma de transmisión','Prueba técnica 24h antes','Moderar chat durante evento','Grabar para replay'],needsMeeting:false},
+];
+
+let projects=LS('diego_os_projects',[]);
+let editingPhases=[];
+
+function calcProjDays(){
+  const start=document.getElementById('pj-start').value;
+  const end=document.getElementById('pj-end').value;
+  if(!start||!end)return;
+  const s=new Date(start),e=new Date(end);
+  const diffDays=Math.round((e-s)/(1000*60*60*24));
+  let workDays=0;
+  for(let d=new Date(s);d<=e;d.setDate(d.getDate()+1)){
+    const dow=d.getDay();if(dow!==0&&dow!==6)workDays++;
+  }
+  const info=document.getElementById('pj-days-info');
+  info.innerHTML=`<span style="color:var(--accent);font-weight:600">${workDays} días laborables</span> · ${diffDays} días totales hasta el evento`;
+  updateDistribution();
+}
+
+function loadTemplate(){
+  const tmpl=document.getElementById('pj-template').value;
+  if(tmpl==='lanzamiento'){
+    editingPhases=LAUNCH_TEMPLATE.map(p=>({...p,subtasks:[...p.subtasks],enabled:true}));
+  } else {
+    editingPhases=[{id:'pc1',name:'Nueva fase',days:5,type:'mine',subtasks:[],needsMeeting:false,enabled:true}];
+  }
+  renderPhaseEditor();
+  updateDistribution();
+}
+
+function renderPhaseEditor(){
+  const el=document.getElementById('pj-phases-editor');if(!el)return;
+  el.innerHTML=editingPhases.map((p,i)=>`
+    <div class="phase-row" id="phase-row-${i}">
+      <div class="phase-num" style="${!p.enabled?'opacity:.4':''}">${i+1}</div>
+      <div>
+        <div class="phase-name" style="${!p.enabled?'text-decoration:line-through;color:var(--text3)':''}">${p.name}</div>
+        <div class="phase-sub">${p.subtasks.slice(0,2).join(' · ')}${p.subtasks.length>2?` +${p.subtasks.length-2}`:''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input type="number" value="${p.days}" min="1" max="60" style="width:50px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:12px;padding:3px 6px;font-family:var(--fb)" onchange="editingPhases[${i}].days=+this.value;updateDistribution()">
+        <span style="font-size:10px;color:var(--text3)">días</span>
+      </div>
+      <div class="phase-type-toggle">
+        <button class="ptt-btn ${p.type==='mine'?'active-mine':''}" onclick="setPhaseType(${i},'mine')">Mía</button>
+        <button class="ptt-btn ${p.type==='delegated'?'active-del':''}" onclick="setPhaseType(${i},'delegated')">Delegada</button>
+      </div>
+      <button onclick="togglePhase(${i})" style="background:none;border:none;cursor:pointer;color:${p.enabled?'var(--text3)':'var(--red)'};font-size:14px;padding:0">${p.enabled?'✓':'✕'}</button>
+    </div>`).join('');
+}
+
+function setPhaseType(i,type){editingPhases[i].type=type;renderPhaseEditor();updateDistribution()}
+function togglePhase(i){editingPhases[i].enabled=!editingPhases[i].enabled;renderPhaseEditor();updateDistribution()}
+
+function updateDistribution(){
+  const start=document.getElementById('pj-start').value;
+  const end=document.getElementById('pj-end').value;
+  const el=document.getElementById('pj-distribution');
+  if(!start||!end||!editingPhases.length){if(el)el.innerHTML='Selecciona fechas para ver la distribución';return}
+
+  const activePhasesmine=editingPhases.filter(p=>p.enabled&&p.type==='mine');
+  const totalMyDays=activePhasesmine.reduce((a,p)=>a+p.days,0);
+  const s=new Date(start),e=new Date(end);
+  let workDays=0;
+  for(let d=new Date(s);d<=e;d.setDate(d.getDate()+1)){const dow=d.getDay();if(dow!==0&&dow!==6)workDays++}
+
+  const myPhases=editingPhases.filter(p=>p.enabled&&p.type==='mine').length;
+  const delPhases=editingPhases.filter(p=>p.enabled&&p.type==='delegated').length;
+  const ok=totalMyDays<=workDays*0.7;
+
+  if(el)el.innerHTML=`
+    <div style="display:flex;gap:16px;margin-bottom:10px">
+      <div><div style="font-size:18px;font-weight:700;font-family:var(--fh);color:var(--accent)">${totalMyDays}</div><div style="font-size:10px;color:var(--text3)">días de trabajo tuyo</div></div>
+      <div><div style="font-size:18px;font-weight:700;font-family:var(--fh);color:var(--text2)">${myPhases}</div><div style="font-size:10px;color:var(--text3)">fases tuyas</div></div>
+      <div><div style="font-size:18px;font-weight:700;font-family:var(--fh);color:var(--text3)">${delPhases}</div><div style="font-size:10px;color:var(--text3)">fases delegadas</div></div>
+    </div>
+    <div style="font-size:12px;color:${ok?'var(--green)':'var(--red)'};font-weight:600">${ok?'✓ Distribución viable — queda >30% libre cada día':'⚠ Muy ajustado — considera ampliar el plazo o reducir fases'}</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px">${workDays} días laborables disponibles · máximo ${Math.round(workDays*0.7)} días para proyecto (70%)</div>`;
+}
+
+function createProject(){
+  const name=document.getElementById('pj-name').value.trim();
+  const client=document.getElementById('pj-client').value;
+  const start=document.getElementById('pj-start').value;
+  const end=document.getElementById('pj-end').value;
+  if(!name||!client||!start||!end){alert('Rellena todos los campos');return}
+
+  const phases=editingPhases.filter(p=>p.enabled).map(p=>({...p,status:'pending',subtasks:[...p.subtasks]}));
+  const proj={
+    id:'proj'+Date.now(),name,client,start,end,
+    status:'active',phases,
+    createdAt:Date.now()
+  };
+
+  // Distribute mine phases into calendar tasks
+  distributeProjectTasks(proj);
+  projects.push(proj);
+  SS('diego_os_projects',projects);
+  // Reset form
+  document.getElementById('pj-name').value='';
+  document.getElementById('pj-start').value='';
+  document.getElementById('pj-end').value='';
+  editingPhases=[];
+  document.getElementById('pj-phases-editor').innerHTML='';
+  showView('proyectos');
+}
+
+function distributeProjectTasks(proj){
+  // Build list of working days from start to end
+  const s=new Date(proj.start),e=new Date(proj.end);
+  const workingDays=[];
+  for(let d=new Date(s);d<=e;d.setDate(d.getDate()+1)){
+    const dow=d.getDay();
+    if(dow!==0&&dow!==6)workingDays.push(dateStr(d));
+  }
+
+  const minePhases=proj.phases.filter(p=>p.type==='mine');
+  let dayIdx=0;
+
+  minePhases.forEach(phase=>{
+    let daysLeft=phase.days;
+    const phaseTaskDates=[];
+    while(daysLeft>0&&dayIdx<workingDays.length){
+      const ds=workingDays[dayIdx];
+      const freeH=dayHOfStr(ds);
+      const used=assignedH(ds)+tasks.filter(t=>t.date===ds&&t.projectId).reduce((a,t)=>a+(+t.hours||0),0);
+      const available=freeH-used;
+      const limit=freeH*0.7;// max 70% for project
+
+      if(available>0&&used<limit){
+        const useH=Math.min(2,available,limit-used);// max 2h per day per phase
+        if(useH>=0.5){
+          phaseTaskDates.push({date:ds,hours:useH});
+          daysLeft--;
+        }
+      }
+      dayIdx++;
+      if(dayIdx>=workingDays.length)dayIdx=0;// wrap if not enough days
+    }
+
+    // Create one task per allocated day
+    phaseTaskDates.forEach((alloc,i)=>{
+      const t={
+        id:'t'+Date.now()+Math.random().toString(36).slice(2,6),
+        client:proj.client,
+        name:`[${proj.name}] ${phase.name}${phaseTaskDates.length>1?` (${i+1}/${phaseTaskDates.length})`:''}`,
+        priority:2,date:alloc.date,deadline:proj.end,
+        hours:alloc.hours,
+        notes:`Fase ${phase.id} del proyecto "${proj.name}". Subtareas: ${phase.subtasks.slice(0,3).join(', ')}`,
+        status:'sin empezar',timeLogs:[],createdAt:Date.now(),
+        projectId:proj.id,phaseId:phase.id,isProject:true
+      };
+      tasks.push(t);
+      sbSaveTask(t);
+    });
+  });
+  save();
+}
+
+function renderProjects(){
+  const el=document.getElementById('proj-list');
+  const cnt=document.getElementById('cn-proj');
+  const active=projects.filter(p=>p.status==='active').length;
+  if(cnt){cnt.textContent=active;cnt.style.display=active>0?'':'none'}
+
+  if(!el)return;
+  if(!projects.length){
+    el.innerHTML=`<div class="empty"><div class="ei">◐</div>Sin proyectos activos.<br><br><button class="bsm bstart" onclick="showView('nuevo-proyecto')">+ Crear primer proyecto</button></div>`;
+    return;
+  }
+  el.innerHTML=projects.map(p=>{
+    const c=clientById(p.client);
+    const myPhases=p.phases.filter(ph=>ph.type==='mine');
+    const donePh=myPhases.filter(ph=>ph.status==='done').length;
+    const pct=myPhases.length?Math.round(donePh/myPhases.length*100):0;
+    const nextMine=myPhases.find(ph=>ph.status==='pending');
+    const daysLeft=Math.round((new Date(p.end)-new Date())/(1000*60*60*24));
+    return `<div class="proj-card" onclick="showProjectDetail('${p.id}')">
+      <div class="proj-header">
+        <span class="cdot" style="background:${c.color};width:10px;height:10px"></span>
+        <span class="proj-title">${p.name}</span>
+        <span class="proj-badge ${p.status==='active'?'proj-active':p.status==='done'?'proj-done':'proj-planned'}">${p.status==='active'?'Activo':p.status==='done'?'Completado':'Planificado'}</span>
+        <span style="margin-left:auto;font-size:11px;color:${daysLeft<7?'var(--red)':daysLeft<14?'var(--amber)':'var(--text3)'}">${daysLeft>0?`${daysLeft} días para el evento`:'Evento pasado'}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:8px">${c.name} · ${formatDate(p.start)} → ${formatDate(p.end)}</div>
+      <div class="proj-progress"><div class="proj-progress-fill" style="width:${pct}%"></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+        <span style="font-size:11px;color:var(--text3)">${donePh}/${myPhases.length} fases completadas (${pct}%)</span>
+        ${nextMine?`<span class="gantt-next">● Siguiente: ${nextMine.name}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showProjectDetail(projId){
+  const proj=projects.find(p=>p.id===projId);if(!proj)return;
+  const c=clientById(proj.client);
+  const s=new Date(proj.start),e=new Date(proj.end);
+  const totalDays=Math.round((e-s)/(1000*60*60*24))+1;
+
+  // Build gantt
+  const ganttRows=proj.phases.map(ph=>{
+    const phStart=new Date(proj.start);
+    // Calculate offset based on sequential order of mine phases
+    let offset=0;
+    for(const p2 of proj.phases){
+      if(p2.id===ph.id)break;
+      if(p2.type==='mine')offset+=p2.days;
+    }
+    const startPct=Math.round(offset/totalDays*100);
+    const widthPct=Math.max(2,Math.round(ph.days/totalDays*100));
+    const isDone=ph.status==='done';
+    const phTasks=tasks.filter(t=>t.projectId===proj.id&&t.phaseId===ph.id);
+    const doneTaskCount=phTasks.filter(t=>t.status==='listo').length;
+
+    return `<div class="gantt-row">
+      <div class="gantt-label" title="${ph.name}">${ph.type==='mine'?'':'⤷ '}${ph.name}</div>
+      <div class="gantt-track">
+        <div class="gantt-bar ${isDone?'done-bar':ph.type==='mine'?'mine':'delegated'}"
+          style="left:${startPct}%;width:${widthPct}%"
+          onclick="togglePhaseStatus('${proj.id}','${ph.id}')"
+          title="${ph.type==='mine'?'Clic para marcar como completada':'Fase delegada'}">
+          ${ph.days}d${ph.needsMeeting?' 📅':''}
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--text3);width:60px;flex-shrink:0;text-align:right">
+        ${ph.type==='mine'?`${doneTaskCount}/${phTasks.length} tareas`:'delegada'}
+      </div>
+    </div>`;
+  }).join('');
+
+  const nextMine=proj.phases.find(ph=>ph.type==='mine'&&ph.status==='pending');
+  const myPhases=proj.phases.filter(ph=>ph.type==='mine');
+  const donePh=myPhases.filter(ph=>ph.status==='done').length;
+  const pct=myPhases.length?Math.round(donePh/myPhases.length*100):0;
+
+  document.getElementById('proj-detail-content').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button class="bsm" onclick="showView('proyectos')">← Proyectos</button>
+      <h1 style="margin:0">${proj.name}</h1>
+      <span class="cdot" style="background:${c.color};width:10px;height:10px"></span>
+      <span style="font-size:13px;color:var(--text2)">${c.name}</span>
+      <button class="bsm bdel" style="margin-left:auto;border-color:rgba(192,57,43,.3)" onclick="deleteProject('${proj.id}')">Eliminar proyecto</button>
+    </div>
+
+    ${nextMine?`<div style="background:rgba(37,99,168,.06);border:1px solid rgba(37,99,168,.2);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:16px">●</span>
+      <div><div style="font-size:12px;font-weight:600;font-family:var(--fh);color:var(--blue)">Siguiente paso tuyo</div>
+      <div style="font-size:13px;color:var(--text)">${nextMine.name} · ${nextMine.days} días · ${nextMine.needsMeeting?'Requiere reunión con cliente':'Sin reunión necesaria'}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px">${nextMine.subtasks.slice(0,3).join(' → ')}</div></div>
+    </div>`:'<div style="background:rgba(46,125,79,.06);border:1px solid rgba(46,125,79,.2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:var(--green);font-weight:600">✓ Todas las fases completadas</div>'}
+
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <h2 style="margin:0">Timeline del proyecto</h2>
+        <div style="font-size:11px;color:var(--text2)">${formatDate(proj.start)} → ${formatDate(proj.end)} · ${pct}% completado</div>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:10px">
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><span style="width:12px;height:8px;background:var(--accent);border-radius:2px;display:inline-block"></span>Fase tuya</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><span style="width:12px;height:8px;background:var(--bg4);border:1px solid var(--border2);border-radius:2px;display:inline-block"></span>Delegada</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><span style="width:12px;height:8px;background:var(--green);border-radius:2px;display:inline-block"></span>Completada</span>
+        <span style="font-size:11px;color:var(--text3)">📅 = reunión con cliente</span>
+      </div>
+      <div class="gantt-wrap">${ganttRows}</div>
+    </div>
+
+    <div class="card">
+      <h2>Tareas del proyecto en el calendario</h2>
+      <div style="display:flex;flex-direction:column;gap:0">
+        ${tasks.filter(t=>t.projectId===proj.id&&t.status!=='listo').sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(t=>taskRowHTML(t)).join('')||'<div class="empty">Sin tareas pendientes</div>'}
+      </div>
+    </div>
+  `;
+  showView('proyecto-detalle');
+}
+
+function togglePhaseStatus(projId,phaseId){
+  const proj=projects.find(p=>p.id===projId);if(!proj)return;
+  const ph=proj.phases.find(p=>p.id===phaseId);if(!ph||ph.type==='delegated')return;
+  ph.status=ph.status==='done'?'pending':'done';
+  SS('diego_os_projects',projects);
+  showProjectDetail(projId);
+}
+
+function deleteProject(projId){
+  if(!confirm('¿Eliminar este proyecto y todas sus tareas?'))return;
+  tasks=tasks.filter(t=>t.projectId!==projId);
+  projects=projects.filter(p=>p.id!==projId);
+  save();SS('diego_os_projects',projects);
+  showView('proyectos');
+}
 function updateTopDate(){const d=new Date();document.getElementById('top-date').textContent=`${DN[d.getDay()]} ${d.getDate()} ${MN[d.getMonth()]} ${d.getFullYear()}`}
 
 // ─── INIT ────────────────────────────────────────────────
