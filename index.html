@@ -328,6 +328,7 @@ h3{font-family:var(--fh);font-size:10px;font-weight:600;color:var(--text2);text-
 <nav class="sidebar">
   <div class="nav-lbl">Vistas</div>
   <button class="nav-item active" onclick="showView('calendario')"><span class="icon">◈</span>Calendario<span class="nav-cnt" id="cn-cal" style="display:none">0</span></button>
+  <button class="nav-item" onclick="showView('kanban')"><span class="icon">▦</span>Tareas<span class="nav-cnt" id="cn-kb" style="display:none">0</span></button>
   <button class="nav-item" onclick="showView('proyectos')"><span class="icon">◐</span>Proyectos<span class="nav-cnt" id="cn-proj" style="display:none">0</span></button>
   <button class="nav-item" onclick="showView('vencidas')"><span class="icon">⚠</span>Vencidas<span class="nav-cnt" id="cn-overdue" style="display:none;background:var(--red)">0</span></button>
   <button class="nav-item" onclick="showView('memoria')"><span class="icon">◎</span>Memoria</button>
@@ -1776,7 +1777,7 @@ function initSelects(){
 }
 
 // ─── VIEWS ──────────────────────────────────────────────
-const VIEWS=['calendario','proyectos','proyecto-detalle','nuevo-proyecto','vencidas','memoria','nueva','recurrentes','agencia','tiempos','ajustes'];
+const VIEWS=['calendario','kanban','proyectos','proyecto-detalle','nuevo-proyecto','vencidas','memoria','nueva','recurrentes','agencia','tiempos','ajustes'];
 function showView(name){
   VIEWS.forEach(v=>{const el=document.getElementById('view-'+v);if(el)el.classList.toggle('active',v===name)});
   document.querySelectorAll('.nav-item').forEach(el=>{
@@ -1787,6 +1788,7 @@ function showView(name){
   if(name==='calendario')renderCalendar();
   if(name==='proyectos')renderProjects();
   if(name==='nuevo-proyecto'){loadTemplate();calcProjDays();}
+  if(name==='kanban')renderKanban();
   if(name==='vencidas')renderOverdue();
   if(name==='memoria')renderMemory();
   if(name==='recurrentes')renderRecurrents();
@@ -1796,7 +1798,7 @@ function showView(name){
 }
 
 function refreshAll(){
-  renderSidebar();updateOverdueBadge();
+  renderSidebar();renderKanban();updateOverdueBadge();
   if(document.getElementById('view-calendario').classList.contains('active'))renderCalendar();
   if(document.getElementById('view-vencidas').classList.contains('active'))renderOverdue();
 }
