@@ -156,7 +156,7 @@ h3{font-family:var(--fh);font-size:10px;font-weight:600;color:var(--text2);text-
 .mini-sel{height:22px;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;color:var(--text2);font-size:11px;padding:0 3px;font-family:var(--fb);cursor:pointer}
 
 /* KANBAN */
-.kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:1}
+.kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:1;min-width:0}
 .kb-col{background:var(--bg3);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:300px}
 .kb-col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
 .kb-col-title{font-family:var(--fh);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2)}
@@ -1165,6 +1165,7 @@ function taskRowHTML(t){
         <span class="tag tag-c"><span class="cdot" style="background:${c.color}"></span>${c.name}</span>
         <span class="sbadge ${sc[t.status]||'s0'}">${sl[t.status]||t.status}</span>
         <span class="tag tag-h">${t.hours}h${avg?` · hist.${avg.toFixed(1)}h`:''}</span>
+        ${t.subtasks&&t.subtasks.length?`<span class="tag tag-h" style="color:${t.subtasks.every(s=>s.done)?'var(--green)':'var(--text3)'}">☑ ${t.subtasks.filter(s=>s.done).length}/${t.subtasks.length}</span>`:''}
         ${t.deadline?`<span class="tag tag-dl">↗ ${formatDate(t.deadline)}</span>`:''}
       </div>
     </div>
@@ -1231,15 +1232,24 @@ function openTaskModal(id){
   const totalLogged=t.timeLogs?t.timeLogs.reduce((a,l)=>a+l.hours,0):0;
   const pc={1:'Crítico',2:'Importante',3:'Normal'};
   const logsHtml=t.timeLogs?.length?t.timeLogs.map(l=>`<div class="log-entry"><div class="log-date">${l.date}</div><div class="log-dur">${l.hours.toFixed(2)}h · ${Math.round(l.hours*60)} min</div></div>`).join('')+'<div class="log-total">Total: <strong>'+totalLogged.toFixed(2)+'h</strong></div>':'<div style="font-size:12px;color:var(--text3);padding:8px">Sin sesiones registradas</div>';
+  const subtasksHtml=renderSubtasksHTML(t);
   document.getElementById('mt-title').textContent=t.name;
   document.getElementById('mt-title').dataset.id=id;
   document.getElementById('mt-content').innerHTML=`
     <div class="detail-row"><span class="detail-lbl">Cliente</span><span class="detail-val" style="display:flex;align-items:center;gap:6px"><span class="cdot" style="background:${c.color}"></span>${c.name}</span></div>
     <div class="detail-row"><span class="detail-lbl">Prioridad</span><span class="detail-val">${pc[t.priority]||'—'}</span></div>
     <div class="detail-row"><span class="detail-lbl">Fecha</span><span class="detail-val">${t.date||'—'}</span></div>
-    ${t.deadline?`<div class="detail-row"><span class="detail-lbl">Límite</span><span class="detail-val" style="color:var(--amber)">${t.deadline}</span></div>`:''}
+    ${t.deadline?`<div class="detail-row"><span class="detail-lbl">Límite</span><span class="detail-val" style="color:var(--amber)">${formatDate(t.deadline)}</span></div>`:''}
     <div class="detail-row"><span class="detail-lbl">Horas est.</span><span class="detail-val">${t.hours}h${avg?` <span style="color:var(--green);font-size:11px">(hist. ${avg.toFixed(1)}h)</span>`:''}</span></div>
     ${t.notes?`<div class="detail-row"><span class="detail-lbl">Notas</span><span class="detail-val" style="color:var(--text2)">${t.notes}</span></div>`:''}
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <h3 style="margin-bottom:8px">Subtareas</h3>
+      ${subtasksHtml}
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <input type="text" id="modal-new-sub" placeholder="Añadir subtarea..." style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:12px;padding:5px 8px;font-family:var(--fb)" onkeydown="if(event.key==='Enter')addSubtask('${id}')">
+        <button class="bsm bstart" onclick="addSubtask('${id}')">+ Añadir</button>
+      </div>
+    </div>
     <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
       <h3 style="margin-bottom:8px">Sesiones de trabajo</h3>${logsHtml}
     </div>`;
@@ -1247,7 +1257,43 @@ function openTaskModal(id){
   document.getElementById('modal-task').classList.add('open');
 }
 
-// ─── MEETING → TAREA AUTOMÁTICA ──────────────────────────
+function renderSubtasksHTML(t){
+  const subs=t.subtasks||[];
+  if(!subs.length)return`<div style="font-size:12px;color:var(--text3);padding:4px 0">Sin subtareas. Añade la primera abajo.</div>`;
+  return subs.map((s,i)=>`
+    <div class="pending-item">
+      <input type="checkbox" class="pending-check" ${s.done?'checked':''} onchange="toggleSubtask('${t.id}',${i})">
+      <span class="pending-text${s.done?' done-text':''}" style="font-size:13px">${s.text}</span>
+      <button class="pending-del" onclick="deleteSubtask('${t.id}',${i})">✕</button>
+    </div>`).join('');
+}
+
+function addSubtask(taskId){
+  const inp=document.getElementById('modal-new-sub');
+  if(!inp||!inp.value.trim())return;
+  const t=tasks.find(x=>x.id===taskId);if(!t)return;
+  if(!t.subtasks)t.subtasks=[];
+  t.subtasks.push({text:inp.value.trim(),done:false});
+  inp.value='';
+  save();sbSaveTask(t);
+  // Re-render subtasks section only
+  const subsEl=document.getElementById('modal-new-sub').parentElement.previousElementSibling;
+  if(subsEl)subsEl.innerHTML=renderSubtasksHTML(t);
+}
+
+function toggleSubtask(taskId,idx){
+  const t=tasks.find(x=>x.id===taskId);if(!t||!t.subtasks)return;
+  t.subtasks[idx].done=!t.subtasks[idx].done;
+  save();sbSaveTask(t);
+  openTaskModal(taskId);
+}
+
+function deleteSubtask(taskId,idx){
+  const t=tasks.find(x=>x.id===taskId);if(!t||!t.subtasks)return;
+  t.subtasks.splice(idx,1);
+  save();sbSaveTask(t);
+  openTaskModal(taskId);
+}
 function openMeetingNotes(encodedKey,encodedTitle){
   const key=decodeURIComponent(encodedKey);
   const title=decodeURIComponent(encodedTitle);
@@ -2011,38 +2057,39 @@ function distributeProjectTasks(proj){
   }
 
   const minePhases=proj.phases.filter(p=>p.type==='mine');
-  // Track hours already allocated per day in this distribution run
-  const allocatedPerDay={};
+  // Track ALL hours allocated per day (existing tasks + this run)
+  // Build baseline from existing non-project tasks
+  const dayUsed={};
+  workingDays.forEach(ds=>{
+    dayUsed[ds]=tasks.filter(t=>t.date===ds&&!t.projectId).reduce((a,t)=>a+(+t.hours||0),0);
+  });
+
+  const newTasks=[];
 
   minePhases.forEach(phase=>{
     let hoursLeft=phase.hours||2;
-    const phaseSlots=[];// {date, hours}
+    const phaseSlots=[];
 
     for(let di=0;di<workingDays.length&&hoursLeft>0;di++){
       const ds=workingDays[di];
       const freeH=dayHOfStr(ds);
       if(freeH<=0)continue;
 
-      // Already used by existing tasks + already allocated in this run
-      const existingUsed=assignedH(ds);
-      const runUsed=allocatedPerDay[ds]||0;
-      const totalUsed=existingUsed+runUsed;
-      const cap=freeH*0.7;// 70% cap
-      const available=Math.max(0,cap-totalUsed);
-
+      const cap=freeH*0.7;
+      const used=dayUsed[ds]||0;
+      const available=Math.max(0,cap-used);
       if(available<0.5)continue;
 
-      const useH=Math.min(hoursLeft,available,2);// max 2h per day per phase
+      const useH=Math.min(hoursLeft,available,2);
       if(useH<0.5)continue;
 
       phaseSlots.push({date:ds,hours:Math.round(useH*2)/2});
-      allocatedPerDay[ds]=(allocatedPerDay[ds]||0)+useH;
+      dayUsed[ds]=(dayUsed[ds]||0)+useH;
       hoursLeft-=useH;
     }
 
-    // Create tasks from slots
     phaseSlots.forEach((slot,i)=>{
-      const t={
+      newTasks.push({
         id:'t'+Date.now()+Math.random().toString(36).slice(2,6),
         client:proj.client,
         name:`[${proj.name}] ${phase.name}${phaseSlots.length>1?` (${i+1}/${phaseSlots.length})`:''}`,
@@ -2051,11 +2098,12 @@ function distributeProjectTasks(proj){
         notes:`Fase del proyecto "${proj.name}". Subtareas: ${phase.subtasks.slice(0,3).join(', ')}`,
         status:'sin empezar',timeLogs:[],createdAt:Date.now(),
         projectId:proj.id,phaseId:phase.id,isProject:true
-      };
-      tasks.push(t);
-      sbSaveTask(t);
+      });
     });
   });
+
+  // Push all at once and sync
+  newTasks.forEach(t=>{tasks.push(t);sbSaveTask(t)});
   save();
 }
 
@@ -2187,9 +2235,12 @@ function togglePhaseStatus(projId,phaseId){
 
 function deleteProject(projId){
   if(!confirm('¿Eliminar este proyecto y todas sus tareas?'))return;
+  const projTasks=tasks.filter(t=>t.projectId===projId);
+  projTasks.forEach(t=>sbDeleteTask(t.id));
   tasks=tasks.filter(t=>t.projectId!==projId);
   projects=projects.filter(p=>p.id!==projId);
   save();SS('diego_os_projects',projects);
+  refreshAll();
   showView('proyectos');
 }
 
