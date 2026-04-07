@@ -1870,55 +1870,114 @@ function initGcalClient(){
   gcalClient=google.accounts.oauth2.initTokenClient({
     client_id:CLIENT_ID,scope:SCOPES,prompt:'',
     callback:(resp)=>{
+      if(gcalClient._callback){gcalClient._callback(resp);gcalClient._callback=null;return}
       if(resp.error)return;
       gcalToken={token:resp.access_token,expires:Date.now()+resp.expires_in*1000};
       SS('diego_os_gcal_token',gcalToken);updateGcalBtn(true);fetchCalendarEvents();
     }
   });
 }
-function updateGcalBtn(connected){
+function updateGcalBtn(connected,reconnecting=false){
   const btn=document.getElementById('gcal-btn');
   const lbl=document.getElementById('gcal-label');
+  if(reconnecting){btn.classList.remove('connected');lbl.textContent='Reconectando...';return}
   if(connected){btn.classList.add('connected');lbl.textContent='Calendar conectado'}
   else{btn.classList.remove('connected');lbl.textContent='Conectar Calendar'}
 }
+
 async function fetchCalendarEvents(){
-  if(!gcalToken||Date.now()>gcalToken.expires){gcalToken=null;SS('diego_os_gcal_token',null);updateGcalBtn(false);return}
+  if(!gcalToken)return;
+  // Token expired — try silent refresh before giving up
+  if(Date.now()>gcalToken.expires-60*1000){
+    await silentRefreshToken();
+    if(!gcalToken)return;
+  }
   const dates=getWeekDates(calOffset);
   const start=new Date(dates[0]+'T00:00:00');
   const end=new Date(dates[4]+'T23:59:59');
   try{
     const res=await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${start.toISOString()}&timeMax=${end.toISOString()}&singleEvents=true&orderBy=startTime&maxResults=100`,{headers:{Authorization:`Bearer ${gcalToken.token}`}});
-    if(!res.ok){if(res.status===401){gcalToken=null;SS('diego_os_gcal_token',null);updateGcalBtn(false)}return}
+    if(!res.ok){
+      if(res.status===401){
+        // Token rejected — try refresh once
+        const refreshed=await silentRefreshToken();
+        if(refreshed)fetchCalendarEvents();
+        else{gcalToken=null;SS('diego_os_gcal_token',null);updateGcalBtn(false)}
+      }
+      return;
+    }
     const data=await res.json();
     const items=(data.items||[]).filter(e=>e.start&&(e.start.dateTime||e.start.date));
     calEventsByDay={};
     items.forEach(e=>{const ds=e.start.dateTime?e.start.dateTime.slice(0,10):e.start.date;if(!calEventsByDay[ds])calEventsByDay[ds]=[];calEventsByDay[ds].push(e)});
     calEvents=calEventsByDay[todayStr()]||[];
     renderCalendar();
-  }catch(e){console.error('GCal',e)}
+  }catch(e){console.log('GCal fetch error',e)}
+}
+
+function silentRefreshToken(){
+  return new Promise(resolve=>{
+    if(!gcalClient){initGcalClient();if(!gcalClient){resolve(false);return}}
+    updateGcalBtn(false,true);
+    const prev=gcalClient._callback;
+    gcalClient._callback=(resp)=>{
+      if(resp.error){gcalToken=null;SS('diego_os_gcal_token',null);updateGcalBtn(false);resolve(false);return}
+      gcalToken={token:resp.access_token,expires:Date.now()+resp.expires_in*1000};
+      SS('diego_os_gcal_token',gcalToken);updateGcalBtn(true);resolve(true);
+    };
+    try{gcalClient.requestAccessToken({prompt:''})}catch(e){updateGcalBtn(false);resolve(false)}
+  });
 }
 
 function checkToken(){
   if(!gcalToken)return;
-  if(Date.now()>gcalToken.expires-5*60*1000){if(gcalClient)gcalClient.requestAccessToken({prompt:''})}
-  else fetchCalendarEvents();
+  if(Date.now()>gcalToken.expires-5*60*1000){
+    // Proactively refresh 5 min before expiry
+    silentRefreshToken().then(ok=>{if(ok)fetchCalendarEvents()});
+  } else {
+    fetchCalendarEvents();
+  }
+}
+
+let gcalInitialized=false;
+function ensureGcalReady(callback){
+  if(gcalInitialized&&gcalClient){callback();return}
+  const tryInit=()=>{
+    if(typeof google!=='undefined'&&google.accounts){
+      if(!gcalClient)initGcalClient();
+      gcalInitialized=true;
+      callback();
+    } else {
+      setTimeout(tryInit,300);
+    }
+  };
+  tryInit();
 }
 
 window.addEventListener('load',()=>{
-  const tryInit=()=>{
-    if(typeof google!=='undefined'&&google.accounts){
-      initGcalClient();
-      if(gcalToken){
-        if(Date.now()<gcalToken.expires){updateGcalBtn(true);fetchCalendarEvents()}
-        else if(gcalClient)gcalClient.requestAccessToken({prompt:''});
+  ensureGcalReady(()=>{
+    if(gcalToken){
+      if(Date.now()<gcalToken.expires-60*1000){
+        updateGcalBtn(true);fetchCalendarEvents();
+      } else {
+        silentRefreshToken().then(ok=>{if(ok)fetchCalendarEvents()});
       }
-    } else setTimeout(tryInit,500);
-  };
-  setTimeout(tryInit,500);
-  setInterval(checkToken,5*60*1000);
+    }
+  });
+  setInterval(checkToken,4*60*1000);// Check every 4 min
 });
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&gcalToken){if(Date.now()>gcalToken.expires){if(gcalClient)gcalClient.requestAccessToken({prompt:''})}else fetchCalendarEvents()}});
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&gcalToken){
+    ensureGcalReady(()=>{
+      if(Date.now()>gcalToken.expires-60*1000){
+        silentRefreshToken().then(ok=>{if(ok)fetchCalendarEvents()});
+      } else {
+        fetchCalendarEvents();
+      }
+    });
+  }
+});
 
 // ─── PROJECTS ────────────────────────────────────────────
 const LAUNCH_TEMPLATE=[
