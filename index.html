@@ -1293,29 +1293,48 @@ function openTaskModal(id){
 
 function saveTaskEdits(id){
   const t=tasks.find(x=>x.id===id);if(!t)return;
-  t.name=document.getElementById('edit-name').value.trim()||t.name;
-  t.client=document.getElementById('edit-client').value||t.client;
-  t.priority=+document.getElementById('edit-prio').value||t.priority;
-  t.date=document.getElementById('edit-date').value||t.date;
-  t.deadline=document.getElementById('edit-deadline').value||'';
-  t.hours=+document.getElementById('edit-hours').value||t.hours;
-  t.notes=document.getElementById('edit-notes').value;
+  const nameEl=document.getElementById('edit-name');
+  const clientEl=document.getElementById('edit-client');
+  const prioEl=document.getElementById('edit-prio');
+  const dateEl=document.getElementById('edit-date');
+  const deadlineEl=document.getElementById('edit-deadline');
+  const hoursEl=document.getElementById('edit-hours');
+  const notesEl=document.getElementById('edit-notes');
+  if(nameEl&&nameEl.value.trim())t.name=nameEl.value.trim();
+  if(clientEl&&clientEl.value)t.client=clientEl.value;
+  if(prioEl)t.priority=+prioEl.value;
+  if(dateEl&&dateEl.value)t.date=dateEl.value;
+  if(deadlineEl)t.deadline=deadlineEl.value||'';
+  if(hoursEl&&hoursEl.value)t.hours=+hoursEl.value;
+  if(notesEl)t.notes=notesEl.value;
+  // subtasks are NOT touched here — handled separately
   document.getElementById('mt-title').textContent=t.name;
   save();sbSaveTask(t);refreshAll();
-  // Show saved feedback
-  const btn=event.target;btn.textContent='✓ Guardado';btn.style.color='var(--green)';
-  setTimeout(()=>{btn.textContent='Guardar cambios';btn.style.color=''},1500);
+  const btn=event?.target;
+  if(btn){btn.textContent='✓ Guardado';btn.style.color='var(--green)';setTimeout(()=>{btn.textContent='Guardar cambios';btn.style.color=''},1500)}
 }
 
 function renderSubtasksHTML(t){
   const subs=t.subtasks||[];
-  if(!subs.length)return`<div style="font-size:12px;color:var(--text3);padding:4px 0">Sin subtareas. Añade la primera abajo.</div>`;
-  return subs.map((s,i)=>`
+  const inner=subs.length?subs.map((s,i)=>`
     <div class="pending-item">
       <input type="checkbox" class="pending-check" ${s.done?'checked':''} onchange="toggleSubtask('${t.id}',${i})">
       <span class="pending-text${s.done?' done-text':''}" style="font-size:13px">${s.text}</span>
       <button class="pending-del" onclick="deleteSubtask('${t.id}',${i})">✕</button>
-    </div>`).join('');
+    </div>`).join(''):`<div style="font-size:12px;color:var(--text3);padding:4px 0">Sin subtareas aún.</div>`;
+  return `<div id="subtasks-container-${t.id}">${inner}</div>`;
+}
+
+function refreshSubtasksContainer(t){
+  const el=document.getElementById('subtasks-container-'+t.id);
+  if(!el)return;
+  const subs=t.subtasks||[];
+  el.innerHTML=subs.length?subs.map((s,i)=>`
+    <div class="pending-item">
+      <input type="checkbox" class="pending-check" ${s.done?'checked':''} onchange="toggleSubtask('${t.id}',${i})">
+      <span class="pending-text${s.done?' done-text':''}" style="font-size:13px">${s.text}</span>
+      <button class="pending-del" onclick="deleteSubtask('${t.id}',${i})">✕</button>
+    </div>`).join(''):`<div style="font-size:12px;color:var(--text3);padding:4px 0">Sin subtareas aún.</div>`;
 }
 
 function addSubtask(taskId){
@@ -1326,23 +1345,21 @@ function addSubtask(taskId){
   t.subtasks.push({text:inp.value.trim(),done:false});
   inp.value='';
   save();sbSaveTask(t);
-  // Re-render subtasks section only
-  const subsEl=document.getElementById('modal-new-sub').parentElement.previousElementSibling;
-  if(subsEl)subsEl.innerHTML=renderSubtasksHTML(t);
+  refreshSubtasksContainer(t);
 }
 
 function toggleSubtask(taskId,idx){
   const t=tasks.find(x=>x.id===taskId);if(!t||!t.subtasks)return;
   t.subtasks[idx].done=!t.subtasks[idx].done;
   save();sbSaveTask(t);
-  openTaskModal(taskId);
+  refreshSubtasksContainer(t);
 }
 
 function deleteSubtask(taskId,idx){
   const t=tasks.find(x=>x.id===taskId);if(!t||!t.subtasks)return;
   t.subtasks.splice(idx,1);
   save();sbSaveTask(t);
-  openTaskModal(taskId);
+  refreshSubtasksContainer(t);
 }
 function openMeetingNotes(encodedKey,encodedTitle){
   const key=decodeURIComponent(encodedKey);
