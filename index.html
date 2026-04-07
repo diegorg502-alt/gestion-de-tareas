@@ -445,6 +445,14 @@ h3{font-family:var(--fh);font-size:10px;font-weight:600;color:var(--text2);text-
       <div id="hint-box" class="hint-box"></div>
       <div id="day-preview" class="day-preview"></div>
       <div class="field"><label>Notas</label><textarea id="n-notes" placeholder="Contexto, links, referencias..."></textarea></div>
+      <div class="field">
+        <label>Subtareas</label>
+        <div id="n-subtasks-list" style="margin-bottom:6px"></div>
+        <div style="display:flex;gap:6px">
+          <input type="text" id="n-sub-input" placeholder="Añadir subtarea y pulsa Enter..." style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:12px;padding:6px 10px;font-family:var(--fb)" onkeydown="if(event.key==='Enter'){event.preventDefault();addNewFormSubtask()}">
+          <button class="bsm bstart" onclick="addNewFormSubtask()">+ Añadir</button>
+        </div>
+      </div>
       <button class="btn-primary" onclick="addTask()">Crear tarea →</button>
     </div>
   </div>
@@ -1227,21 +1235,47 @@ function kbDrop(e,newStatus){
 // ─── TASK MODAL ─────────────────────────────────────────
 function openTaskModal(id){
   const t=tasks.find(x=>x.id===id);if(!t)return;
-  const c=clientById(t.client);
   const avg=getAvg(t.client,t.name);
   const totalLogged=t.timeLogs?t.timeLogs.reduce((a,l)=>a+l.hours,0):0;
-  const pc={1:'Crítico',2:'Importante',3:'Normal'};
   const logsHtml=t.timeLogs?.length?t.timeLogs.map(l=>`<div class="log-entry"><div class="log-date">${l.date}</div><div class="log-dur">${l.hours.toFixed(2)}h · ${Math.round(l.hours*60)} min</div></div>`).join('')+'<div class="log-total">Total: <strong>'+totalLogged.toFixed(2)+'h</strong></div>':'<div style="font-size:12px;color:var(--text3);padding:8px">Sin sesiones registradas</div>';
   const subtasksHtml=renderSubtasksHTML(t);
+  const clientOpts=CLIENTS.map(c=>`<option value="${c.id}"${c.id===t.client?' selected':''}>${c.name}</option>`).join('');
+
   document.getElementById('mt-title').textContent=t.name;
   document.getElementById('mt-title').dataset.id=id;
   document.getElementById('mt-content').innerHTML=`
-    <div class="detail-row"><span class="detail-lbl">Cliente</span><span class="detail-val" style="display:flex;align-items:center;gap:6px"><span class="cdot" style="background:${c.color}"></span>${c.name}</span></div>
-    <div class="detail-row"><span class="detail-lbl">Prioridad</span><span class="detail-val">${pc[t.priority]||'—'}</span></div>
-    <div class="detail-row"><span class="detail-lbl">Fecha</span><span class="detail-val">${t.date||'—'}</span></div>
-    ${t.deadline?`<div class="detail-row"><span class="detail-lbl">Límite</span><span class="detail-val" style="color:var(--amber)">${formatDate(t.deadline)}</span></div>`:''}
-    <div class="detail-row"><span class="detail-lbl">Horas est.</span><span class="detail-val">${t.hours}h${avg?` <span style="color:var(--green);font-size:11px">(hist. ${avg.toFixed(1)}h)</span>`:''}</span></div>
-    ${t.notes?`<div class="detail-row"><span class="detail-lbl">Notas</span><span class="detail-val" style="color:var(--text2)">${t.notes}</span></div>`:''}
+    <div class="fg" style="gap:8px">
+      <div class="fr fr2">
+        <div class="field"><label>Nombre</label>
+          <input type="text" id="edit-name" value="${t.name.replace(/"/g,'&quot;')}" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px;padding:6px 10px;font-family:var(--fb);width:100%">
+        </div>
+        <div class="field"><label>Cliente</label>
+          <select id="edit-client" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px;padding:6px 10px;font-family:var(--fb);width:100%">${clientOpts}</select>
+        </div>
+      </div>
+      <div class="fr fr4">
+        <div class="field"><label>Prioridad</label>
+          <select id="edit-prio" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:12px;padding:5px 8px;font-family:var(--fb)">
+            <option value="1"${t.priority===1?' selected':''}>🔴 Crítico</option>
+            <option value="2"${t.priority===2?' selected':''}>🟡 Importante</option>
+            <option value="3"${t.priority===3?' selected':''}>🟢 Normal</option>
+          </select>
+        </div>
+        <div class="field"><label>Fecha</label>
+          <input type="date" id="edit-date" value="${t.date||''}" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:12px;padding:5px 8px;font-family:var(--fb);color-scheme:light">
+        </div>
+        <div class="field"><label>Límite</label>
+          <input type="date" id="edit-deadline" value="${t.deadline||''}" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:12px;padding:5px 8px;font-family:var(--fb);color-scheme:light">
+        </div>
+        <div class="field"><label>Horas</label>
+          <input type="number" id="edit-hours" value="${t.hours}" min="0.5" step="0.5" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:12px;padding:5px 8px;font-family:var(--fb);width:100%">${avg?`<span style="font-size:10px;color:var(--green)">hist.${avg.toFixed(1)}h</span>`:''}
+        </div>
+      </div>
+      <div class="field"><label>Notas</label>
+        <textarea id="edit-notes" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:12px;padding:6px 10px;font-family:var(--fb);width:100%;min-height:50px;resize:vertical">${t.notes||''}</textarea>
+      </div>
+      <button class="bsm bstart" onclick="saveTaskEdits('${id}')" style="align-self:flex-start">Guardar cambios</button>
+    </div>
     <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
       <h3 style="margin-bottom:8px">Subtareas</h3>
       ${subtasksHtml}
@@ -1255,6 +1289,22 @@ function openTaskModal(id){
     </div>`;
   refreshModalTimerBtn();
   document.getElementById('modal-task').classList.add('open');
+}
+
+function saveTaskEdits(id){
+  const t=tasks.find(x=>x.id===id);if(!t)return;
+  t.name=document.getElementById('edit-name').value.trim()||t.name;
+  t.client=document.getElementById('edit-client').value||t.client;
+  t.priority=+document.getElementById('edit-prio').value||t.priority;
+  t.date=document.getElementById('edit-date').value||t.date;
+  t.deadline=document.getElementById('edit-deadline').value||'';
+  t.hours=+document.getElementById('edit-hours').value||t.hours;
+  t.notes=document.getElementById('edit-notes').value;
+  document.getElementById('mt-title').textContent=t.name;
+  save();sbSaveTask(t);refreshAll();
+  // Show saved feedback
+  const btn=event.target;btn.textContent='✓ Guardado';btn.style.color='var(--green)';
+  setTimeout(()=>{btn.textContent='Guardar cambios';btn.style.color=''},1500);
 }
 
 function renderSubtasksHTML(t){
@@ -1615,6 +1665,23 @@ function onNewChange(){
   } else dp.className='day-preview';
 }
 
+let newFormSubtasks=[];
+function addNewFormSubtask(){
+  const inp=document.getElementById('n-sub-input');
+  if(!inp||!inp.value.trim())return;
+  newFormSubtasks.push({text:inp.value.trim(),done:false});
+  inp.value='';renderNewFormSubtasks();
+}
+function renderNewFormSubtasks(){
+  const el=document.getElementById('n-subtasks-list');if(!el)return;
+  if(!newFormSubtasks.length){el.innerHTML='';return}
+  el.innerHTML=newFormSubtasks.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">
+      <span style="flex:1;font-size:12px;color:var(--text)">${s.text}</span>
+      <button onclick="newFormSubtasks.splice(${i},1);renderNewFormSubtasks()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px">✕</button>
+    </div>`).join('');
+}
+
 function addTask(){
   const client=document.getElementById('n-client').value;
   const name=document.getElementById('n-name').value.trim();
@@ -1624,13 +1691,14 @@ function addTask(){
   const freeH=dayHOfStr(date);
   const used=assignedH(date);
   if(freeH>0&&used>=freeH&&!confirm(`El día ${date} está lleno. ¿Añadir igualmente?`))return;
-  tasks.push({id:'t'+Date.now(),client,name,priority:+document.getElementById('n-prio').value,date,deadline:document.getElementById('n-deadline').value,hours,notes:document.getElementById('n-notes').value.trim(),status:'sin empezar',timeLogs:[],createdAt:Date.now()});
-  save();sbSaveTask(tasks[tasks.length-1]);
-  save();
+  const newTask={id:'t'+Date.now(),client,name,priority:+document.getElementById('n-prio').value,date,deadline:document.getElementById('n-deadline').value,hours,notes:document.getElementById('n-notes').value.trim(),status:'sin empezar',timeLogs:[],subtasks:[...newFormSubtasks],createdAt:Date.now()};
+  tasks.push(newTask);
+  save();sbSaveTask(newTask);
   ['n-name','n-notes','n-deadline'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('n-hours').value='1';
   document.getElementById('hint-box').className='hint-box';
   document.getElementById('day-preview').className='day-preview';
+  newFormSubtasks=[];renderNewFormSubtasks();
   showView('calendario');
 }
 
@@ -1917,15 +1985,25 @@ async function fetchCalendarEvents(){
 
 function silentRefreshToken(){
   return new Promise(resolve=>{
-    if(!gcalClient){initGcalClient();if(!gcalClient){resolve(false);return}}
-    updateGcalBtn(false,true);
-    const prev=gcalClient._callback;
-    gcalClient._callback=(resp)=>{
-      if(resp.error){gcalToken=null;SS('diego_os_gcal_token',null);updateGcalBtn(false);resolve(false);return}
-      gcalToken={token:resp.access_token,expires:Date.now()+resp.expires_in*1000};
-      SS('diego_os_gcal_token',gcalToken);updateGcalBtn(true);resolve(true);
-    };
-    try{gcalClient.requestAccessToken({prompt:''})}catch(e){updateGcalBtn(false);resolve(false)}
+    if(!gcalClient){
+      initGcalClient();
+      if(!gcalClient){resolve(false);return}
+    }
+    // Reinit client with a one-time callback for the refresh
+    const refreshClient=google.accounts.oauth2.initTokenClient({
+      client_id:CLIENT_ID,scope:SCOPES,prompt:'',
+      callback:(resp)=>{
+        if(resp.error||!resp.access_token){
+          updateGcalBtn(false);resolve(false);return;
+        }
+        gcalToken={token:resp.access_token,expires:Date.now()+resp.expires_in*1000};
+        SS('diego_os_gcal_token',gcalToken);
+        updateGcalBtn(true);
+        resolve(true);
+      }
+    });
+    try{refreshClient.requestAccessToken({prompt:''})}
+    catch(e){updateGcalBtn(false);resolve(false)}
   });
 }
 
