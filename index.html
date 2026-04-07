@@ -594,6 +594,7 @@ h3{font-family:var(--fh);font-size:10px;font-weight:600;color:var(--text2);text-
     <div class="modal-body">
       <div id="mt-content"></div>
       <div class="modal-actions">
+        <button class="btn-primary" id="mt-save-btn" onclick="saveTaskEdits(document.getElementById('mt-title').dataset.id)" style="height:32px;padding:0 16px;font-size:12px">Guardar</button>
         <button class="bsm bstart" id="mt-timer-btn">▶ Iniciar</button>
         <button class="bsm" id="mt-stop-btn" style="display:none;color:var(--red);border-color:rgba(192,57,43,.3)" onclick="stopTimer();closeModal('modal-task')">■ Guardar sesión</button>
         <button class="bsm" onclick="closeModal('modal-task')">Cerrar</button>
@@ -1274,9 +1275,8 @@ function openTaskModal(id){
       <div class="field"><label>Notas</label>
         <textarea id="edit-notes" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:12px;padding:6px 10px;font-family:var(--fb);width:100%;min-height:50px;resize:vertical">${t.notes||''}</textarea>
       </div>
-      <button class="bsm bstart" onclick="saveTaskEdits('${id}')" style="align-self:flex-start">Guardar cambios</button>
-    </div>
-    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <button class="bsm bstart" onclick="saveTaskEdits('${id}')" style="display:none">.</button>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
       <h3 style="margin-bottom:8px">Subtareas</h3>
       ${subtasksHtml}
       <div style="display:flex;gap:6px;margin-top:8px">
@@ -1307,11 +1307,14 @@ function saveTaskEdits(id){
   if(deadlineEl)t.deadline=deadlineEl.value||'';
   if(hoursEl&&hoursEl.value)t.hours=+hoursEl.value;
   if(notesEl)t.notes=notesEl.value;
-  // subtasks are NOT touched here — handled separately
   document.getElementById('mt-title').textContent=t.name;
   save();sbSaveTask(t);refreshAll();
-  const btn=event?.target;
-  if(btn){btn.textContent='✓ Guardado';btn.style.color='var(--green)';setTimeout(()=>{btn.textContent='Guardar cambios';btn.style.color=''},1500)}
+  const btn=document.getElementById('mt-save-btn');
+  if(btn){
+    btn.textContent='✓ Guardado';
+    btn.style.background='var(--green)';
+    setTimeout(()=>{btn.textContent='Guardar';btn.style.background=''},1500);
+  }
 }
 
 function renderSubtasksHTML(t){
