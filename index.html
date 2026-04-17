@@ -156,16 +156,16 @@ h3{font-family:var(--fh);font-size:10px;font-weight:600;color:var(--text2);text-
 .mini-sel{height:22px;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;color:var(--text2);font-size:11px;padding:0 3px;font-family:var(--fb);cursor:pointer}
 
 /* KANBAN */
-.kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:1;min-width:0;align-items:start}
-.kb-col{background:var(--bg3);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px;min-height:120px}
-.kb-col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:1;min-width:0;align-items:start;height:calc(100vh - 180px)}
+.kb-col{background:var(--bg3);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px;height:100%;overflow-y:auto}
+.kb-col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-shrink:0;position:sticky;top:0;background:var(--bg3);padding-bottom:8px;border-bottom:1px solid var(--border);z-index:1}
 .kb-col-title{font-family:var(--fh);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2)}
 .kb-cnt{font-size:11px;background:var(--bg4);border:1px solid var(--border);border-radius:10px;padding:1px 7px;color:var(--text3)}
 .kb-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:5px}
 .kb-card:hover{border-color:var(--border2);box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .kb-card.dragging{opacity:.4}
-.kb-card-name{font-size:12px;font-weight:500;font-family:var(--fh);color:var(--text);line-height:1.4}
-.kb-card-meta{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.kb-card-name{font-size:12px;font-weight:500;font-family:var(--fh);color:var(--text);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.kb-card-meta{display:flex;gap:5px;align-items:center;flex-wrap:wrap;min-height:22px}
 .kb-filter{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
 .kb-filter select{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--text2);font-size:12px;padding:4px 8px;font-family:var(--fb);height:28px}
 
